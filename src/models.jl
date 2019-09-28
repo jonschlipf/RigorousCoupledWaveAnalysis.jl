@@ -3,7 +3,7 @@ module models
 using ..materials
 using ..ft2d
 
-export Layer,PlainLayer,plainLayer,PatternedLayer,Model,Circle,Rectangle,Ellipse,reciprocal
+export Layer,PlainLayer,PatternedLayer,Model,Circle,Rectangle,Ellipse,reciprocal
 
 abstract type Geometry end
 struct Circle <: Geometry
@@ -48,8 +48,8 @@ struct Model
     εsub::Material
 end
 
-function plainLayer(thi,mat)
-    return PlainLayer(thi,mat)
-end
+#function plainLayer(thi,mat)
+#    return PlainLayer(thi,mat)
+#end
 
 end

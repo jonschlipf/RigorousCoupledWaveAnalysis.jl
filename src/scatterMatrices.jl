@@ -85,7 +85,7 @@ function scattermatrix_layer(dnx,dny,Kx,Ky,k0,λ,l::PatternedLayer,V0)
     return ScatterMatrix(S11,S12,S21,S22)
 end
 
-function scattermatrix_layer(Kx,Ky,k0,λ,l::PlainLayer,V0)
+function scattermatrix_layer(dnx,dny,Kx,Ky,k0,λ,l::PlainLayer,V0)
     ε=get_permittivity(l.material,λ)
     Kz=sqrt.(Complex.(ε*I-Kx*Kx-Ky*Ky))
     Q=[Kx*Ky ε*I-Kx*Kx;Ky*Ky-ε*I -Ky*Kx]

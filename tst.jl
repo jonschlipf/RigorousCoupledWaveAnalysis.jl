@@ -2,12 +2,17 @@ using Pkg
 Pkg.activate(".")
 Pkg.update()
 using LayeredPhotonics
-Nx=1
-Ny=1
-model=Model([PatternedLayer(1,[Constant(4+1im),Constant(1)],[Circle(.5)])],Constant(4),Constant(1))
-grd,mtr=srcwa_matrices(model,Nx,Ny,1,.000001,0,1,2)
+Nx=3
+Ny=3
+λ=1000
+model=Model([PlainLayer(100,Constant(2)),PatternedLayer(200,[Constant(3+1im),Constant(2)],[Circle(.5)])],Constant(1),Constant(4))
+grd=srcwa_grid(model,Nx,Ny,λ,1E-5,0,1000,1000)
+mtr=srcwa_matrices(model,grd,λ)
 a0te,a0tm=srcwa_source(grd.kin,Nx,Ny)
 R,T=srcwa_reftra(a0te,grd::Srcwa_grid,mtr::Srcwa_matrices)
 println(R)
 println(T)
-srcwa_absorptions(a0te,grd::Srcwa_grid,mtr::Srcwa_matrices)
+a,b=srcwa_amplitudes(a0te,grd::Srcwa_grid,mtr::Srcwa_matrices)
+A=srcwa_abs(a,b,grd)
+println(A)
+println(A[1]-A[end])
