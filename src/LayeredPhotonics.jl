@@ -2,7 +2,7 @@ module LayeredPhotonics
 export Layer,plainLayer,PatternedLayer,Material,Constant,Circle,Model
 export Meshgrid,ngrid,kgrid,meshgrid
 export ScatterMatrix,scattermatrix_ref,scattermatrix_tra,scattermatrix_layer,concatenate
-export srcwa_reftra,srcwa_source,srcwa_matrices,Srcwa_grid,Srcwa_matrices
+export srcwa_reftra,srcwa_source,srcwa_matrices,Srcwa_grid,Srcwa_matrices,srcwa_absorptions
 export Circle,Rectangle,Ellipse
 include("ft2d.jl")
 include("materials.jl")

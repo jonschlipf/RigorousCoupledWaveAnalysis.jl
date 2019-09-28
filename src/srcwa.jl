@@ -1,6 +1,6 @@
 module srcwa
 using LinearAlgebra
-export srcwa_reftra,srcwa_source,srcwa_matrices,Srcwa_grid,Srcwa_matrices
+export srcwa_reftra,srcwa_source,srcwa_matrices,Srcwa_grid,Srcwa_matrices,srcwa_absorptions
 using ..models
 using ..materials
 using ..grid
@@ -16,9 +16,7 @@ struct Srcwa_grid
 end
 
 struct Srcwa_matrices
-    Sref::ScatterMatrix
     Kzref::AbstractArray{Complex{Float64},2}
-    Stra::ScatterMatrix
     Kztra::AbstractArray{Complex{Float64},2}
     Slayers::Array{ScatterMatrix,1}
 end
@@ -71,50 +69,38 @@ function srcwa_matrices(model,Nx,Ny,λ,θ,α,ax,ay)
     nx,ny,dnx,dny=ngrid(Nx,Ny)
     k0,Kx,Ky,kin=kgrid(nx,ny,θ,α,λ,ax,ay,get_permittivity(model.εsup,λ))
     V0,Kz0=modes_freespace(Kx,Ky)
-    Sref,Kzref=scattermatrix_ref(Kx,Ky,get_permittivity(model.εsup,λ),V0)
-    Stra,Kztra=scattermatrix_tra(Kx,Ky,get_permittivity(model.εsub,λ),V0)
-    Slayers=Array{ScatterMatrix,1}(undef,length(model.layers))
-    for ct=1:length(model.layers)
-        Slayers[ct]=scattermatrix_layer(dnx,dny,Kx,Ky,k0,λ,model.layers[ct],V0)
+
+    Slayers=Array{ScatterMatrix,1}(undef,length(model.layers)+2)
+    for ct=2:length(Slayers)-1
+        Slayers[ct]=scattermatrix_layer(dnx,dny,Kx,Ky,k0,λ,model.layers[ct-1],V0)
     end
-    return Srcwa_grid(k0,Kx,Ky,kin,V0,Kz0),Srcwa_matrices(Sref,Kzref,Stra,Kztra,Slayers)
+    Slayers[1],Kzref=scattermatrix_ref(Kx,Ky,get_permittivity(model.εsup,λ),V0)
+    Slayers[end],Kztra=scattermatrix_tra(Kx,Ky,get_permittivity(model.εsub,λ),V0)
+    return Srcwa_grid(k0,Kx,Ky,kin,V0,Kz0),Srcwa_matrices(Kzref,Kztra,Slayers)
 end
 function srcwa_reftra(a0,grd::Srcwa_grid,mtr::Srcwa_matrices)
-    Sdev=concatenate(mtr.Slayers)
-    S=concatenate([mtr.Sref,Sdev,mtr.Stra])
+    S=concatenate(mtr.Slayers)
     #a0te,a0tm=srcwa_source(grd.kin,Nx,Ny)
     aRte=S.S11*a0
     R=a2p(S.S11*a0,grd.Kx,grd.Ky,mtr.Kzref,grd.kin[3])
     T=a2p(S.S21*a0,grd.Kx,grd.Ky,mtr.Kztra,grd.kin[3])
     return R,T
 end
-#compute the amplitudes before and after a layer in the stack
-function srcwa_stackamp(Sup,S,Slo,a0)
-    Sbefore=Sup
-    Safter=concatenate(S,Slo)
-    ain=(I-Sbefore.S22*Safter.S11)\(Sbefore.S21*a0)
-    bout=(I-Safter.S11*Sbefore.S22)\(Safter.S11*Sbefore.S21*a0)
+function srcwa_absorptions(a0,grd::Srcwa_grid,mtr::Srcwa_matrices)
+    power=zeros(length(mtr.Slayers)-1)
+    for ct=1:length(power)
+        Sbefore=concatenate(mtr.Slayers[1:ct])
+        Safter=concatenate(mtr.Slayers[ct+1:end])
+        a=(I-Sbefore.S22*Safter.S11)\(Sbefore.S21*a0)
+        b=(I-Safter.S11*Sbefore.S22)\(Safter.S11*Sbefore.S21*a0)
+        ex,ey=a2e2d(a+b,I)
+        hx,hy=a2e2d(-a+b,grd.V0)
+        power[ct]=imag(sum(ex.*conj.(hy)-ey.*conj.(hx)))/grd.kin[3]
+    end
+    return power[1:end-1]-power[2:end]
+end
 
-    Sbefore=concatenate(Sup,S)
-    Safter=Slo
-    aout=(I-Sbefore.S22*Safter.S11)\(Sbefore.S21*a0)
-    bin=(I-Safter.S11*Sbefore.S22)\(Safter.S11*Sbefore.S21*a0)
-    return ain,aout,bin,bout
-end
-function srcwa_absorption(Sabove,Sint,Sbelow,V0,a0,kz0)
-    #compute amplitudes before and after layer
-    ain,aout,bin,bout=stackamp(Sabove,Sint,Sbelow,a0)
-    #W is just the identity matrix for unpatterned space
-    W0=0*V0+I
-    #in-plane fields "above" the layer
-    ex,ey=a2e2d(ain+bout,W0)
-    hx,hy=a2e2d(-ain+bout,V0)
-    #imaginary part of the z-component of the poynting vector integrated over reciprocal space
-    p1=imag(sum(ex.*conj.(hy)-ey.*conj.(hx)))/kz0
-    #and "below" layer
-    ex,ey=a2e2d(aout+bin,W0)
-    hx,hy=a2e2d(-aout+bin,V0)
-    p2=imag(sum(ex.*conj.(hy)-ey.*conj.(hx)))/kz0
-    return p1-p2
-end
+
+
+
 end
