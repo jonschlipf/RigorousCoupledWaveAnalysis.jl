@@ -1,9 +1,21 @@
 module grid
 using LinearAlgebra
-export Meshgrid,ngrid,kgrid,meshgrid
+using ..models
+using ..materials
+export Meshgrid,ngrid,kgrid,meshgrid,Rcwagrid,rcwagrid,modes_freespace
 struct Meshgrid
     x::Array{Float64,2}
     y::Array{Float64,2}
+end
+struct Rcwagrid
+    dnx::AbstractArray{Float64,2}
+    dny::AbstractArray{Float64,2}
+    k0::Float64
+    Kx::AbstractArray{Complex{Float64},2}
+    Ky::AbstractArray{Complex{Float64},2}
+    kin::AbstractArray{Float64,1}
+    V0::AbstractArray{Complex{Float64},2}
+    Kz0::AbstractArray{Complex{Float64},2}
 end
 
 function ngrid(Nx,Ny)
@@ -37,7 +49,36 @@ function meshgrid(acc)
     #creating a square meshgrid
     x=[r  for r in -acc/2+.5:acc/2-.5, c in -acc/2+.5:acc/2-.5]/acc
     y=[c  for r in -acc/2+.5:acc/2-.5, c in -acc/2+.5:acc/2-.5]/acc
-    return Spacegrid(x,y)
+    return Meshgrid(x,y)
+end
+function rcwagrid(model::Model,Nx,Ny,λ,θ,α,ax,ay)
+    nx,ny,dnx,dny=ngrid(Nx,Ny)
+    k0,Kx,Ky,kin=kgrid(nx,ny,θ,α,λ,ax,ay,get_permittivity(model.εsup,λ))
+    V0,Kz0=modes_freespace(Kx,Ky)
+    return Rcwagrid(dnx,dny,k0,Kx,Ky,kin,V0,Kz0)
 end
 
+
+"""
+    modes_freespace(Kx,Ky)
+    Computes the eigenmodes of propagation through free space, for normalization
+    Kx: x-axis component of the propagation vector
+    Ky: y-axis component of the propagation vector
+    returns
+    V0: coordinate transform between free space eigenmode amplitude and magnetic field
+    Kz0: z-axis component of the propagation vector in free space
+"""
+function modes_freespace(Kx,Ky)
+    #just because |k|=1
+    Kz0=sqrt.(Complex.(I-Kx*Kx-Ky*Ky))
+    #P0 is identity
+    Q0=[Kx*Ky I-Kx*Kx;Ky*Ky-I -Ky*Kx]
+    #propagation
+    q0=1im*Kz0
+    q0=[q0 q0*0;0*q0 q0]
+    #Free space, so W is identity
+    #W0=I+0*Q0
+    V0=Q0/Diagonal(q0)
+    return V0,Kz0
+end
 end

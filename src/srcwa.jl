@@ -1,26 +1,34 @@
 module srcwa
 using LinearAlgebra
-export srcwa_reftra,srcwa_source,srcwa_matrices,Srcwa_grid,Srcwa_matrices,srcwa_amplitudes,srcwa_grid,srcwa_abs
+export srcwa_reftra,a2p,slicehalf,scatterSource,srcwa_matrices,Srcwa_matrices,srcwa_amplitudes,srcwa_abs
 using ..models
 using ..materials
+using ..eigenmodes
 using ..grid
 using ..scatterMatrices
-struct Srcwa_grid
-    dnx::AbstractArray{Float64,2}
-    dny::AbstractArray{Float64,2}
-    k0::Float64
-    Kx::AbstractArray{Complex{Float64},2}
-    Ky::AbstractArray{Complex{Float64},2}
-    kin::AbstractArray{Float64,1}
-    V0::AbstractArray{Complex{Float64},2}
-    Kz0::AbstractArray{Complex{Float64},2}
-end
+
 struct Srcwa_matrices
     Kzref::AbstractArray{Complex{Float64},2}
     Kztra::AbstractArray{Complex{Float64},2}
     Slayers::Array{ScatterMatrix,1}
 end
-function srcwa_source(kinc,Nx,Ny)
+
+function a2p(a,Kx,Ky,Kz,kz0)
+    ex,ey,ez=a2e(a,Kx,Ky,Kz)
+    return e2p(ex,ey,ez,Kz,kz0)
+end
+function a2e(a,Kx,Ky,Kz)
+    ex,ey=slicehalf(a)
+    ez=-Kz\(Kx*ex+Ky*ey)
+    return ex,ey,ez
+end
+function a2e2d(a,W)
+    e=W*a
+    ex,ey=slicehalf(e)
+    return ex,ey
+end
+
+function scatterSource(kinc,Nx,Ny)
     #the total number of scattering states
     width=(Nx*2+1)*(Ny*2+1)
     #vertical
@@ -39,47 +47,30 @@ function srcwa_source(kinc,Nx,Ny)
     a0tm=esource#/sqrt(epsref)
     return a0te,a0tm
 end
-function a2p(a,Kx,Ky,Kz,kz0)
-    ex,ey,ez=a2e(a,Kx,Ky,Kz)
-    return e2p(ex,ey,ez,Kz,kz0)
-end
-function a2e(a,Kx,Ky,Kz)
-    ex,ey=slicehalf(a)
-    ez=-Kz\(Kx*ex+Ky*ey)
-    return ex,ey,ez
-end
-function a2e2d(a,W)
-    e=W*a
-    ex,ey=slicehalf(e)
-    return ex,ey
-end
 #just slices a vector e in half
 function slicehalf(e)
-    mylength=convert(Int64,length(e)/2)
-    return e[1:mylength],e[mylength+1:end]
+    mylength=convert(Int64,size(e,1)/2)
+    return e[1:mylength,:],e[mylength+1:end,:]
 end
 function e2p(ex,ey,ez,Kz,kz0)
     P=abs.(ex).^2+abs.(ey).^2+abs.(ez).^2
     P=sum(real.(Kz)*P/real(kz0))
     return P
 end
-function srcwa_grid(model::Model,Nx,Ny,λ,θ,α,ax,ay)
-    nx,ny,dnx,dny=ngrid(Nx,Ny)
-    k0,Kx,Ky,kin=kgrid(nx,ny,θ,α,λ,ax,ay,get_permittivity(model.εsup,λ))
-    V0,Kz0=modes_freespace(Kx,Ky)
-    return Srcwa_grid(dnx,dny,k0,Kx,Ky,kin,V0,Kz0)
-end
 
-function srcwa_matrices(model::Model,grd::Srcwa_grid,λ)
+
+function srcwa_matrices(model::Model,grd::Rcwagrid,λ)
     Slayers=Array{ScatterMatrix,1}(undef,length(model.layers)+2)
     for ct=2:length(Slayers)-1
-        Slayers[ct]=scattermatrix_layer(grd.dnx,grd.dny,grd.Kx,grd.Ky,grd.k0,λ,model.layers[ct-1],grd.V0)
+        Slayers[ct]=scattermatrix_layer(eigenmode(grd.dnx,grd.dny,grd.Kx,grd.Ky,grd.k0,λ,model.layers[ct-1]),grd.V0)
     end
-    Slayers[1],Kzref=scattermatrix_ref(grd.Kx,grd.Ky,get_permittivity(model.εsup,λ),grd.V0)
-    Slayers[end],Kztra=scattermatrix_tra(grd.Kx,grd.Ky,get_permittivity(model.εsub,λ),grd.V0)
-    return Srcwa_matrices(Kzref,Kztra,Slayers)
+    ref=halfspace(grd.Kx,grd.Ky,get_permittivity(model.εsup,λ))
+    tra=halfspace(grd.Kx,grd.Ky,get_permittivity(model.εsub,λ))
+    Slayers[1]=scattermatrix_ref(ref,grd.V0)
+    Slayers[end]=scattermatrix_tra(tra,grd.V0)
+    return Srcwa_matrices(ref.Kz,tra.Kz,Slayers)
 end
-function srcwa_reftra(a0,grd::Srcwa_grid,mtr::Srcwa_matrices)
+function srcwa_reftra(a0,grd::Rcwagrid,mtr::Srcwa_matrices)
     S=concatenate(mtr.Slayers)
     #a0te,a0tm=srcwa_source(grd.kin,Nx,Ny)
     aRte=S.S11*a0
@@ -88,7 +79,7 @@ function srcwa_reftra(a0,grd::Srcwa_grid,mtr::Srcwa_matrices)
     return R,T
 end
 
-function srcwa_amplitudes(a0,grd::Srcwa_grid,mtr::Srcwa_matrices)
+function srcwa_amplitudes(a0,grd::Rcwagrid,mtr::Srcwa_matrices)
     a=zeros(length(a0),length(mtr.Slayers)-1)*1im
     b=zeros(length(a0),length(mtr.Slayers)-1)*1im
     for ct=1:size(a,2)
@@ -100,7 +91,7 @@ function srcwa_amplitudes(a0,grd::Srcwa_grid,mtr::Srcwa_matrices)
     return a,b
 end
 
-function srcwa_abs(a,b,grd::Srcwa_grid)
+function srcwa_abs(a,b,grd::Rcwagrid)
     p=zeros(size(a,2))
     for ct=1:size(a,2)
         ex,ey=a2e2d(a[:,ct]+b[:,ct],I)
@@ -109,5 +100,7 @@ function srcwa_abs(a,b,grd::Srcwa_grid)
     end
     return p
 end
+
+
 
 end
