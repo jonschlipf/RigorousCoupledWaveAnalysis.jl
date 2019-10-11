@@ -1,4 +1,4 @@
-module LayeredPhotonics
+module RCWA
 export Layer,PlainLayer,PatternedLayer,Material,Constant,Circle,Model
 export Meshgrid,ngrid,kgrid,meshgrid
 export ScatterMatrix,scattermatrix_ref,scattermatrix_tra,scattermatrix_layer,concatenate
