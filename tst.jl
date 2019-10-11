@@ -1,7 +1,7 @@
 using Pkg
 Pkg.activate(".")
 Pkg.update()
-using LayeredPhotonics
+using RCWA
 Nx=3
 Ny=3
 λ=1000
