@@ -1,14 +1,14 @@
 module materials
 
-export Material,Constant,get_permittivity
+export Material,ConstantPerm,get_permittivity
 
 abstract type Material end
 
-struct Constant <: Material
+struct ConstantPerm <: Material
     ε::Complex{Float64}
 end
 
-function get_permittivity(mat::Constant,λ)
+function get_permittivity(mat::ConstantPerm,λ)
     return mat.ε
 end
 

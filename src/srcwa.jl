@@ -3,15 +3,9 @@ using LinearAlgebra
 export srcwa_reftra,a2p,slicehalf,scatterSource,srcwa_matrices,Srcwa_matrices,srcwa_amplitudes,srcwa_abs
 using ..models
 using ..materials
-using ..eigenmodes
-using ..grid
+using ..common
+using ..grids
 using ..scatterMatrices
-
-struct Srcwa_matrices
-    Kzref::AbstractArray{Complex{Float64},2}
-    Kztra::AbstractArray{Complex{Float64},2}
-    Slayers::Array{ScatterMatrix,1}
-end
 
 function a2p(a,Kx,Ky,Kz,kz0)
     ex,ey,ez=a2e(a,Kx,Ky,Kz)
@@ -58,40 +52,32 @@ function e2p(ex,ey,ez,Kz,kz0)
     return P
 end
 
-
-function srcwa_matrices(model::Model,grd::Rcwagrid,λ)
-    Slayers=Array{ScatterMatrix,1}(undef,length(model.layers)+2)
-    for ct=2:length(Slayers)-1
-        Slayers[ct]=scattermatrix_layer(eigenmode(grd.dnx,grd.dny,grd.Kx,grd.Ky,grd.k0,λ,model.layers[ct-1]),grd.V0)
-    end
+function srcwa_reftra(a0,model::Model,grd::Grid,λ)
     ref=halfspace(grd.Kx,grd.Ky,get_permittivity(model.εsup,λ))
     tra=halfspace(grd.Kx,grd.Ky,get_permittivity(model.εsub,λ))
-    Slayers[1]=scattermatrix_ref(ref,grd.V0)
-    Slayers[end]=scattermatrix_tra(tra,grd.V0)
-    return Srcwa_matrices(ref.Kz,tra.Kz,Slayers)
-end
-function srcwa_reftra(a0,grd::Rcwagrid,mtr::Srcwa_matrices)
-    S=concatenate(mtr.Slayers)
-    #a0te,a0tm=srcwa_source(grd.kin,Nx,Ny)
-    aRte=S.S11*a0
-    R=a2p(S.S11*a0,grd.Kx,grd.Ky,mtr.Kzref,grd.kin[3])
-    T=a2p(S.S21*a0,grd.Kx,grd.Ky,mtr.Kztra,grd.kin[3])
+    S=scattermatrix_ref(ref,grd.V0)
+    for ct=1:length(model.layers)
+        S=concatenate(S,scattermatrix_layer(eigenmodes(grd.dnx,grd.dny,grd.Kx,grd.Ky,grd.k0,λ,model.layers[ct]),grd.V0))
+    end
+    S=concatenate(S,scattermatrix_tra(tra,grd.V0))
+    R=a2p(S.S11*a0,grd.Kx,grd.Ky,ref.Kz,grd.kin[3])
+    T=a2p(S.S21*a0,grd.Kx,grd.Ky,tra.Kz,grd.kin[3])
     return R,T
 end
 
-function srcwa_amplitudes(a0,grd::Rcwagrid,mtr::Srcwa_matrices)
-    a=zeros(length(a0),length(mtr.Slayers)-1)*1im
-    b=zeros(length(a0),length(mtr.Slayers)-1)*1im
+function srcwa_amplitudes(a0,grd::Grid,mtr::Array{ScatterMatrix,1})
+    a=zeros(length(a0),length(mtr)-1)*1im
+    b=zeros(length(a0),length(mtr)-1)*1im
     for ct=1:size(a,2)
-        Sbefore=concatenate(mtr.Slayers[1:ct])
-        Safter=concatenate(mtr.Slayers[ct+1:end])
+        Sbefore=concatenate(mtr[1:ct])
+        Safter=concatenate(mtr[ct+1:end])
         a[:,ct]=(I-Sbefore.S22*Safter.S11)\(Sbefore.S21*a0)
         b[:,ct]=(I-Safter.S11*Sbefore.S22)\(Safter.S11*Sbefore.S21*a0)
     end
     return a,b
 end
 
-function srcwa_abs(a,b,grd::Rcwagrid)
+function srcwa_abs(a,b,grd::Grid)
     p=zeros(size(a,2))
     for ct=1:size(a,2)
         ex,ey=a2e2d(a[:,ct]+b[:,ct],I)

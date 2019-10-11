@@ -1,13 +1,13 @@
-module grid
+module grids
 using LinearAlgebra
 using ..models
 using ..materials
-export Meshgrid,ngrid,kgrid,meshgrid,Rcwagrid,rcwagrid,modes_freespace
+export Meshgrid,ngrid,kgrid,meshgrid,Rcwagrid,rcwagrid,modes_freespace,grid,Grid
 struct Meshgrid
     x::Array{Float64,2}
     y::Array{Float64,2}
 end
-struct Rcwagrid
+struct Grid
     dnx::AbstractArray{Float64,2}
     dny::AbstractArray{Float64,2}
     k0::Float64
@@ -51,11 +51,11 @@ function meshgrid(acc)
     y=[c  for r in -acc/2+.5:acc/2-.5, c in -acc/2+.5:acc/2-.5]/acc
     return Meshgrid(x,y)
 end
-function rcwagrid(model::Model,Nx,Ny,λ,θ,α,ax,ay)
+function grid(model::Model,Nx,Ny,λ,θ,α,ax,ay)
     nx,ny,dnx,dny=ngrid(Nx,Ny)
     k0,Kx,Ky,kin=kgrid(nx,ny,θ,α,λ,ax,ay,get_permittivity(model.εsup,λ))
     V0,Kz0=modes_freespace(Kx,Ky)
-    return Rcwagrid(dnx,dny,k0,Kx,Ky,kin,V0,Kz0)
+    return Grid(dnx,dny,k0,Kx,Ky,kin,V0,Kz0)
 end
 
 

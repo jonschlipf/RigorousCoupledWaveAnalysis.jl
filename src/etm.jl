@@ -1,23 +1,22 @@
 module etm
 using LinearAlgebra
 using ..srcwa
-export etmsource,etm1
+export etmsource,etm_reftra
 function F(em)
     return [em.W em.W;-em.V em.V]
 end
-function  etm1(ref,tra,em,s,grd)
+function  etm_reftra(ref,tra,em,s,grd)
     B=[I I*0;0*I I; 1im*grd.Kx*grd.Ky/tra.Kz 1im*(grd.Ky^2+tra.Kz^2)/tra.Kz;-1im*(grd.Kx^2+tra.Kz^2)/tra.Kz -1im*grd.Kx*grd.Ky/tra.Kz]
-    aN,bN=slicehalf(F(em[end])\Matrix(B))
+    #backward iteration
     a=Array{Array{Complex{Float64},2},1}(undef,length(em))
-    a[end]=aN
-    b=bN
-
+    a[end],b=slicehalf(F(em[end])\Matrix(B))
     for cnt=length(em):-1:2
 
         a[cnt-1],b=slicehalf(F(em[cnt-1])\F(em[cnt])*[I I*0;I*0 em[cnt].X]*[I ;(b/a[cnt])*em[cnt].X])
     end
     A=Matrix([ I 0*I;0*I I;-1im*grd.Kx*grd.Ky/ref.Kz -1im*(ref.Kz^2+grd.Ky*grd.Ky)/ref.Kz;1im*(grd.Kx*grd.Kx+ref.Kz^2)/ref.Kz 1im*grd.Kx*grd.Ky/ref.Kz])
     Bprime=Matrix(F(em[1])*[I I*0;I*0 em[1].X]*[I;(b/a[1])*em[1].X])#*t1
+    #forward iteratio
     t=Array{Array{Complex{Float64},1},1}(undef,length(em))
     r,tu=slicehalf(cat(-A,Bprime,dims=2)\s)
     t[1]=vec(tu)
@@ -29,6 +28,7 @@ function  etm1(ref,tra,em,s,grd)
     T=a2p(t,grd.Kx,grd.Ky,tra.Kz,grd.kin[3])
     return R,T
 end
+
 function etmsource(kinc,Nx,Ny)
     width=(Nx*2+1)*(Ny*2+1)
     #vertical

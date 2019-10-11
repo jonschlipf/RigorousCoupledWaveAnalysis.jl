@@ -2,13 +2,23 @@ module scatterMatrices
 using LinearAlgebra
 using ..materials
 using ..models
-using ..eigenmodes
-export ScatterMatrix,scattermatrix_ref,scattermatrix_tra,scattermatrix_layer,concatenate
+using ..common
+using ..grids
+export ScatterMatrix,scattermatrix_ref,scattermatrix_tra,scattermatrix_layer,concatenate,scatMatrices
 struct ScatterMatrix
     S11::Array{Complex{Float64},2}
     S12::Array{Complex{Float64},2}
     S21::Array{Complex{Float64},2}
     S22::Array{Complex{Float64},2}
+end
+function scatMatrices(m::Model,g::Grid,λ)
+    s=Array{ScatterMatrix,1}(undef,length(m.layers)+2)
+    s[1]=scattermatrix_ref(halfspace(g.Kx,g.Ky,get_permittivity(m.εsup,λ)),g.V0)
+    s[end]=scattermatrix_tra(halfspace(g.Kx,g.Ky,get_permittivity(m.εsub,λ)),g.V0)
+    for cnt=2:length(m.layers)+1
+        s[cnt]=scattermatrix_layer(eigenmodes(g,λ,m.layers[cnt-1]),g.V0)
+    end
+    return s
 end
 
 function scattermatrix_ref(r::Halfspace,V0)
@@ -31,7 +41,7 @@ function scattermatrix_tra(t::Halfspace,V0)
     S22=-Ai*B
     return ScatterMatrix(S11,S12,S21,S22)
 end
-function scattermatrix_layer(e::Eigenmode,V0)
+function scattermatrix_layer(e::Eigenmodes,V0)
     A=Matrix(e.W)\I+(Matrix(e.V)\I)*V0
     B=Matrix(e.W)\I-(Matrix(e.V)\I)*V0
     Ai=I/A
