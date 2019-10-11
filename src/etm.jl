@@ -1,6 +1,9 @@
 module etm
 using LinearAlgebra
-using ..srcwa
+using ..common
+using ..models
+using ..grids
+using ..materials
 export etmsource,etm_reftra
 function F(em)
     return [em.W em.W;-em.V em.V]
@@ -27,6 +30,13 @@ function  etm_reftra(ref,tra,em,s,grd)
     R=a2p(r,grd.Kx,grd.Ky,ref.Kz,grd.kin[3])
     T=a2p(t,grd.Kx,grd.Ky,tra.Kz,grd.kin[3])
     return R,T
+end
+
+function  etm_reftra(s,m::Model,grd::Grid,λ)
+    ref=halfspace(grd.Kx,grd.Ky,get_permittivity(m.εsup,λ))
+    tra=halfspace(grd.Kx,grd.Ky,get_permittivity(m.εsub,λ))
+    ems=eigenmodes(grd,λ,m.layers)
+    etm_reftra(ref,tra,ems,s,grd)
 end
 
 function etmsource(kinc,Nx,Ny)

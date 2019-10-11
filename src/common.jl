@@ -5,6 +5,7 @@ using ..models
 using ..grids
 export Eigenmodes,Halfspace
 export eigenmodes,halfspace
+export a2e,a2e2d,a2p,e2p,slicehalf
 struct Eigenmodes
     V::AbstractArray{Complex{Float64},2}
     W::AbstractArray{Complex{Float64},2}
@@ -69,5 +70,31 @@ function eigenmodes(g::Grid,λ,l::Array{Layer,1})
     end
     return rt
 end
+
+#just slices a vector e in half
+function slicehalf(e)
+    mylength=convert(Int64,size(e,1)/2)
+    return e[1:mylength,:],e[mylength+1:end,:]
+end
+function e2p(ex,ey,ez,Kz,kz0)
+    P=abs.(ex).^2+abs.(ey).^2+abs.(ez).^2
+    P=sum(real.(Kz)*P/real(kz0))
+    return P
+end
+function a2p(a,Kx,Ky,Kz,kz0)
+    ex,ey,ez=a2e(a,Kx,Ky,Kz)
+    return e2p(ex,ey,ez,Kz,kz0)
+end
+function a2e(a,Kx,Ky,Kz)
+    ex,ey=slicehalf(a)
+    ez=-Kz\(Kx*ex+Ky*ey)
+    return ex,ey,ez
+end
+function a2e2d(a,W)
+    e=W*a
+    ex,ey=slicehalf(e)
+    return ex,ey
+end
+
 
 end  # module  eigenmodes
