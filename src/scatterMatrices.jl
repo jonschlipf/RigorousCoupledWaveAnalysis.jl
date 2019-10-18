@@ -11,7 +11,7 @@ struct ScatterMatrix
     S21::Array{Complex{Float64},2}
     S22::Array{Complex{Float64},2}
 end
-function scatMatrices(m::Model,g::Grid,λ)
+function scatMatrices(m::Model,g::RcwaGrid,λ)
     s=Array{ScatterMatrix,1}(undef,length(m.layers)+2)
     s[1]=scattermatrix_ref(halfspace(g.Kx,g.Ky,get_permittivity(m.εsup,λ)),g.V0)
     s[end]=scattermatrix_tra(halfspace(g.Kx,g.Ky,get_permittivity(m.εsub,λ)),g.V0)

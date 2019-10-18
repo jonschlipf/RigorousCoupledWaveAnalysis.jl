@@ -48,10 +48,10 @@ function eigenmodes(dnx,dny,Kx,Ky,k0,λ,l::PlainLayer)
     X=exp(Matrix(q*k0*l.thickness))
     return Eigenmodes(V,W,X)
 end
-function eigenmodes(g::Grid,λ,l::PlainLayer)
+function eigenmodes(g::RcwaGrid,λ,l::PlainLayer)
     return eigenmodes(g.dnx,g.dny,g.Kx,g.Ky,g.k0,λ,l)
 end
-function eigenmodes(g::Grid,λ,l::PatternedLayer)
+function eigenmodes(g::RcwaGrid,λ,l::PatternedLayer)
     return eigenmodes(g.dnx,g.dny,g.Kx,g.Ky,g.k0,λ,l)
 end
 
@@ -63,7 +63,7 @@ function halfspace(Kx,Ky,ε)
     return Halfspace(Kz,V)
 end
 
-function eigenmodes(g::Grid,λ,l::Array{Layer,1})
+function eigenmodes(g::RcwaGrid,λ,l::Array{Layer,1})
     rt=Array{Eigenmodes,1}(undef,length(l))
     for cnt=1:length(l)
         rt[cnt]=eigenmodes(g,λ,l[cnt])
@@ -81,12 +81,13 @@ function e2p(ex,ey,ez,Kz,kz0)
     P=sum(real.(Kz)*P/real(kz0))
     return P
 end
-function a2p(a,Kx,Ky,Kz,kz0)
-    ex,ey,ez=a2e(a,Kx,Ky,Kz)
+function a2p(a,W,Kx,Ky,Kz,kz0)
+    ex,ey,ez=a2e(a,W,Kx,Ky,Kz)
     return e2p(ex,ey,ez,Kz,kz0)
 end
-function a2e(a,Kx,Ky,Kz)
-    ex,ey=slicehalf(a)
+function a2e(a,W,Kx,Ky,Kz)
+    e=W*a
+    ex,ey=slicehalf(e)
     ez=-Kz\(Kx*ex+Ky*ey)
     return ex,ey,ez
 end
