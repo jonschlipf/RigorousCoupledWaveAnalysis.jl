@@ -14,7 +14,6 @@ function  etm_reftra(ref,tra,em,s,grd)
     a=Array{Array{Complex{Float64},2},1}(undef,length(em))
     a[end],b=slicehalf(F(em[end])\Matrix(B))
     for cnt=length(em):-1:2
-
         a[cnt-1],b=slicehalf(F(em[cnt-1])\F(em[cnt])*[I I*0;I*0 em[cnt].X]*[I ;(b/a[cnt])*em[cnt].X])
     end
     A=Matrix([ I 0*I;0*I I;-1im*grd.Kx*grd.Ky/ref.Kz -1im*(ref.Kz^2+grd.Ky*grd.Ky)/ref.Kz;1im*(grd.Kx*grd.Kx+ref.Kz^2)/ref.Kz 1im*grd.Kx*grd.Ky/ref.Kz])
@@ -27,8 +26,8 @@ function  etm_reftra(ref,tra,em,s,grd)
         t[cnt+1]=a[cnt]\(em[cnt].X*t[cnt])
     end
     t=a[end]\em[end].X*t[end]
-    R=a2p(r,grd.Kx,grd.Ky,ref.Kz,grd.kin[3])
-    T=a2p(t,grd.Kx,grd.Ky,tra.Kz,grd.kin[3])
+    R=a2p(r,I,grd.Kx,grd.Ky,ref.Kz,grd.kin[3])
+    T=a2p(t,I,grd.Kx,grd.Ky,tra.Kz,grd.kin[3])
     return R,T
 end
 

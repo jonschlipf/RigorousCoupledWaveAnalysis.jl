@@ -33,7 +33,7 @@ function eigenmodes(dnx,dny,Kx,Ky,k0,λ,l::PatternedLayer)
     V=Q*W/Diagonal(q)
     #X the factor applied to the amplitudes when propagatin through the layer
     X=exp(q*k0*l.thickness)
-    return Eigenmodes(V,W,X)
+    return Eigenmodes(Matrix(V),Matrix(W),X)
 end
 
 function eigenmodes(dnx,dny,Kx,Ky,k0,λ,l::PlainLayer)
@@ -46,7 +46,7 @@ function eigenmodes(dnx,dny,Kx,Ky,k0,λ,l::PlainLayer)
     V=Q/Diagonal(q)
     W=I+0*V
     X=exp(Matrix(q*k0*l.thickness))
-    return Eigenmodes(V,W,X)
+    return Eigenmodes(Matrix(V),Matrix(W),X)
 end
 function eigenmodes(g::RcwaGrid,λ,l::PlainLayer)
     return eigenmodes(g.dnx,g.dny,g.Kx,g.Ky,g.k0,λ,l)
