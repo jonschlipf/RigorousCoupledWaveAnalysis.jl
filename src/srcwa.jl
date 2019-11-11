@@ -48,7 +48,6 @@ end
 function srcwa_amplitudes(a0,grd::RcwaGrid,mtr::Array{ScatterMatrix,1})
     a=zeros(length(a0),length(mtr)-1)*1im
     b=zeros(length(a0),length(mtr)-1)*1im
-    println(size(mtr))
     for ct=1:size(a,2)
         Sbefore=concatenate(mtr[1:ct])
         Safter=concatenate(mtr[ct+1:end])
