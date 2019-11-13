@@ -3,8 +3,8 @@ module models
 using ..materials
 using ..ft2d
 
-export Layer,PlainLayer,PatternedLayer,Model,Circle,Rectangle,Ellipse,reciprocal
-
+export Custom,Layer,PlainLayer,PatternedLayer,Model,Circle,Rectangle,Ellipse,reciprocal
+export Combination,Rotation,Shift
 abstract type Geometry end
 struct Circle <: Geometry
     radius::Float64
@@ -19,11 +19,45 @@ end
 function reciprocal(r::Rectangle,dnx,dny)
     return rectft(r.dx,r.dy,dnx,dny)
 end
+struct Custom <: Geometry
+    F::AbstractArray{Complex{Float64},2}
+end
+function reciprocal(c::Custom,dnx,dny)
+    return c.F
+end
+struct Rotation <: Geometry
+    G::Geometry
+    θ::Float64
+end
+function reciprocal(c::Rotation,dnx,dny)
+    dnx2=dnx*cos(c.θ)+dny*sin(c.θ)
+    dny2=-dnx*sin(c.θ)+dny*cos(c.θ)
+    return reciprocal(c.G,dnx2,dny2)
+end
+struct Shift <: Geometry
+    G::Geometry
+    ax::Float64
+    ay::Float64
+end
+function reciprocal(c::Shift,dnx,dny)
+    return reciprocal(c.G,dnx,dny).*exp.(-2im*pi*c.ax.*dnx).*exp.(-2im*pi*c.ay.*dny)
+end
+struct Combination <: Geometry
+    G::Array{Geometry,1}
+end
+function reciprocal(c::Combination,dnx,dny)
+    ret=dnx*0
+    for i=1:length(c.G)
+        ret+=reciprocal(c.G[i],dnx,dny)
+    end
+    return ret
+end
+
 struct Ellipse <: Geometry
     rx::Float64
     ry::Float64
 end
-function reciprocal(c::Ellipse,dnx,dny)
+function reciprocal(e::Ellipse,dnx,dny)
     return ellipft(e.rx,e.ry,dnx,dny)
 end
 struct arbitrary <: Geometry
