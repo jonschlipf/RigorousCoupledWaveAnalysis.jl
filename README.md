@@ -35,7 +35,7 @@ There are structures implemented for plain (homogenous) layers and patterned lay
 ```julia
 L1=PlainLayer(100,M1) #homogenous layer of thickness 100
 L2=PatternedLayer(200,[M1,M2],[Geo]) #patterned layer of thickness 100 with inclusion of material M1 in a background of M2
-´´´
+```
 
 A model object requires an arrays of layers (sorted in direction of the light propagation) and materials for the superstrate and substrate halfspaces.
 
