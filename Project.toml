@@ -1,0 +1,9 @@
+name = "RCWA"
+uuid = "c8f76c1c-e1da-11e9-2f58-db462fa08db6"
+authors = ["jonschlipf <schlipf.jon@gmx.net>"]
+version = "0.1.0"
+
+[deps]
+Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
