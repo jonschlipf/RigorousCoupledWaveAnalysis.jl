@@ -20,7 +20,11 @@ function reciprocal(r::Rectangle,dnx,dny)
     return rectft(r.dx,r.dy,dnx,dny)
 end
 struct Custom <: Geometry
+<<<<<<< HEAD
     F::Array{Complex{Float64},2}
+=======
+    F::AbstractArray{Complex{Float64},2}
+>>>>>>> 00f14cd568c1e9c26d1fe34db6812f725b5ada19
 end
 function reciprocal(c::Custom,dnx,dny)
     return c.F
@@ -68,8 +72,13 @@ end
 abstract type Layer end
 struct PatternedLayer <: Layer
     thickness::Float64
+<<<<<<< HEAD
     materials::Array{Material,1}
     geometries::Array{Geometry,1}
+=======
+    materials::AbstractArray{Material,1}
+    geometries::AbstractArray{Geometry,1}
+>>>>>>> 00f14cd568c1e9c26d1fe34db6812f725b5ada19
 end
 struct PlainLayer <: Layer
     thickness::Float64
