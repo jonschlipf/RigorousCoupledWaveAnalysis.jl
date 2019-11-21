@@ -5,7 +5,7 @@ export ScatterMatrix,scattermatrix_ref,scattermatrix_tra,scattermatrix_layer,con
 export srcwa_reftra,scatterSource,srcwa_matrices,rcwagrid,Srcwa_matrices,srcwa_amplitudes,RcwaGrid,srcwa_abs
 export Circle,Rectangle,Ellipse,etm1,etmsource,eigenmodes,Eigenmode,scatMatrices,get_permittivity
 export srcwa_fields,recip2real,real2recip,InterpolPerm,Custom
-export Combination,Rotation,Shift
+export Combination,Rotation,Shift,ModelPerm
 include("ft2d.jl")
 include("materials.jl")
 include("models.jl")

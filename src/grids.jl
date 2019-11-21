@@ -10,16 +10,16 @@ struct Meshgrid
 end
 
 struct RcwaGrid
-    dnx::AbstractArray{Float64,2}
-    dny::AbstractArray{Float64,2}
+    dnx::Array{Float64,2}
+    dny::Array{Float64,2}
     k0::Float64
-    Kx::AbstractArray{Complex{Float64},2}
-    Ky::AbstractArray{Complex{Float64},2}
-    kin::AbstractArray{Float64,1}
-    V0::AbstractArray{Complex{Float64},2}
-    Kz0::AbstractArray{Complex{Float64},2}
-    nx::AbstractArray{Float64,1}
-    ny::AbstractArray{Float64,1}
+    Kx::Array{Complex{Float64},2}
+    Ky::Array{Complex{Float64},2}
+    kin::Array{Float64,1}
+    V0::Array{Complex{Float64},2}
+    Kz0::Array{Complex{Float64},2}
+    nx::Array{Float64,1}
+    ny::Array{Float64,1}
 end
 
 function ngrid(Nx,Ny)
