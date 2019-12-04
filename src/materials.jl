@@ -14,16 +14,16 @@ struct ModelPerm<: Material
 end
 
 function get_permittivity(mat::ConstantPerm,λ)
-    return mat.ε
+    return Complex(mat.ε)
 end
 
 struct InterpolPerm <: Material
     ε
 end
 function get_permittivity(mat::InterpolPerm,λ)
-    return mat.ε(λ)
+    return Complex(mat.ε(λ))
 end
 function get_permittivity(mat::ModelPerm,λ)
-    return mat.f(λ)
+    return Complex(mat.f(λ))
 end
 end
