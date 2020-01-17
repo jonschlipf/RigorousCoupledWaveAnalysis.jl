@@ -46,8 +46,8 @@ function reciprocal(c::Rotation,dnx,dny)
 end
 function drawable(c::Rotation)
     x,y=drawable(c.G)
-    u=x*cos(c.θ)+y*sin(c.θ)
-    v=-x*sin(c.θ)+y*cos(c.θ)
+    u=x*cos(-c.θ)+y*sin(-c.θ)
+    v=-x*sin(-c.θ)+y*cos(-c.θ)
     return u,v
 end
 struct Shift <: Geometry
