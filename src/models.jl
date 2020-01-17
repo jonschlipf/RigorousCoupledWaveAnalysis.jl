@@ -14,7 +14,7 @@ function reciprocal(c::Circle,dnx,dny)
 end
 function drawable(c::Circle)
     phivals=2pi*(0:.01:1)
-    return c.radius*cos.(phivals),c.radius*sin.(phivals)
+    return c.radius*.5cos.(phivals),c.radius*.5sin.(phivals)
 end
 struct Rectangle <: Geometry
     dx::Float64
@@ -91,7 +91,7 @@ end
 
 function drawable(c::Ellipse)
     phivals=2pi*(0:.01:1)
-    return c.rx*cos.(phivals),c.ry*sin.(phivals)
+    return c.rx*.5cos.(phivals),c.ry*.5sin.(phivals)
 end
 
 struct arbitrary <: Geometry
