@@ -60,7 +60,7 @@ function reciprocal(c::Shift,dnx,dny)
 end
 function drawable(c::Shift)
     x,y=drawable(c.G)
-    return x+c.ax,y+c.ay
+    return x.+c.ax,y.+c.ay
 end
 struct Combination <: Geometry
     G::Array{Geometry,1}
