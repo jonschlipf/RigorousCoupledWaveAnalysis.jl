@@ -3,7 +3,7 @@ module models
 using ..materials
 using ..ft2d
 
-export Custom,Layer,PlainLayer,PatternedLayer,Model,Circle,Rectangle,Ellipse,reciprocal
+export Custom,Layer,PlainLayer,PatternedLayer,RCWAModel,Circle,Rectangle,Ellipse,reciprocal
 export Combination,Rotation,Shift,drawable
 abstract type Geometry end
 struct Circle <: Geometry
@@ -110,7 +110,7 @@ struct PlainLayer <: Layer
     material::Material
 end
 
-struct Model
+struct RCWAModel
     layers::AbstractArray{Layer,1}
     εsup::Material
     εsub::Material

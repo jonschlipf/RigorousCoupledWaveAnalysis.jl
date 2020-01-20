@@ -32,7 +32,7 @@ function scatterSource(kinc,Nx,Ny)
 end
 
 
-function srcwa_reftra(a0,model::Model,grd::RcwaGrid,λ)
+function srcwa_reftra(a0,model::RCWAModel,grd::RcwaGrid,λ)
     ref=halfspace(grd.Kx,grd.Ky,get_permittivity(model.εsup,λ))
     tra=halfspace(grd.Kx,grd.Ky,get_permittivity(model.εsub,λ))
     S=scattermatrix_ref(ref,grd.V0)

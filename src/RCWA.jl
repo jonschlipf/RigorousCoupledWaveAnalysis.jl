@@ -1,5 +1,5 @@
 module RCWA
-export Layer,PlainLayer,PatternedLayer,Material,ConstantPerm,Circle,Model
+export Layer,PlainLayer,PatternedLayer,Material,ConstantPerm,Circle,RCWAModel
 export Meshgrid,ngrid,kgrid,meshgrid,halfspace,etm_reftra
 export ScatterMatrix,scattermatrix_ref,scattermatrix_tra,scattermatrix_layer,concatenate
 export srcwa_reftra,scatterSource,srcwa_matrices,rcwagrid,Srcwa_matrices,srcwa_amplitudes,RcwaGrid,srcwa_abs

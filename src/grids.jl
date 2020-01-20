@@ -56,7 +56,7 @@ function meshgrid(acc)
     return Meshgrid(x,y)
 end
 
-function rcwagrid(model::Model,Nx,Ny,λ,θ,α,ax,ay)
+function rcwagrid(model::RCWAModel,Nx,Ny,λ,θ,α,ax,ay)
     nx,ny,dnx,dny=ngrid(Nx,Ny)
     k0,Kx,Ky,kin=kgrid(nx,ny,θ,α,λ,ax,ay,get_permittivity(model.εsup,λ))
     V0,Kz0=modes_freespace(Kx,Ky)
