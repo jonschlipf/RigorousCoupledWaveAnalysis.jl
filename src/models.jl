@@ -24,7 +24,7 @@ function reciprocal(r::Rectangle,dnx,dny)
     return rectft(r.dx,r.dy,dnx,dny)
 end
 function drawable(r::Rectangle)
-    return [.5*r.dx,-.5*r.dx,-.5*r.dx,.5*r.dx],[.5*r.dy,.5*r.dy,-.5*r.dy,-.5*r.dy]
+    return [.5*r.dx,-.5*r.dx,-.5*r.dx,.5*r.dx,.5*r.dx],[.5*r.dy,.5*r.dy,-.5*r.dy,-.5*r.dy,.5*r.dy]
 end
 struct Custom <: Geometry
     F::Array{Complex{Float64},2}
