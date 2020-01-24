@@ -40,7 +40,7 @@ L2=PatternedLayer(200,[M1,M2],[Geo]) #patterned layer of thickness 100 with incl
 A model object requires an arrays of layers (sorted in direction of the light propagation) and materials for the superstrate and substrate halfspaces.
 
 ```julia
-Mdl=model([L1,L2],Air,M2) #device with two layers in air, M2 is the substrate
+Mdl=RCWAModel([L1,L2],Air,M2) #device with two layers in air, M2 is the substrate
 ```
 ## References
 
