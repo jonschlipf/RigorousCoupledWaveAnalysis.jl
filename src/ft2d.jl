@@ -22,14 +22,23 @@ function circft(fra,dnx,dny)
 end
 
 function real2recip(dnx,dny,f,x,y)
-    F=zeros(size(dnx))*1im
-    for i=1:size(dnx,1)
-        for j=1:size(dnx,2)
-            F[i,j]=size(x,1)^-1*size(x,2)^-1*sum(f.*exp.(-1im*dnx[i,j]*x*2*pi-1im*dny[i,j]*y*2*pi))
+    M=Int(sqrt(size(dnx,1)))
+    M2=2M-1
+    Fs=zeros(M2,M2)*1im
+    for i=1:M2
+        for j=1:M2
+            Fs[i,j]=length(x)^-1*sum(f.*exp.(-2im*π*(x*(i-M)+y*(j-M))))
+        end
+    end
+    F=0.0im*dnx
+    for i=1:size(F,1)
+        for j=1:size(F,2)
+            F[i,j]=Fs[dnx[i,j]+M,dny[i,j]+M]
         end
     end
     return F
 end
+
 function recip2real(dnx,dny,F,x,y)
     f=zeros(size(x))*1im
     for i=1:size(x,1)
