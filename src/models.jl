@@ -1,8 +1,10 @@
-module models
 
+
+module models
+include("srcwa.jl")
 using ..materials
 
-using ..shapes
+using .shapes
 
 export Custom,Layer,PlainLayer,PatternedLayer,RCWAModel,Circle,Rectangle,Ellipse,reciprocal
 export Combination,Rotation,Shift,drawable

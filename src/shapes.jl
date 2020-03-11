@@ -1,3 +1,5 @@
+module shapes
+
 using ..ft2d
 export Circle,Rectangle,Custom,reciprocal,drawable
 
@@ -29,4 +31,6 @@ function reciprocal(c::Custom,dnx,dny)
 end
 function drawable(c::Custom)
     return 0,0
+end
+
 end
