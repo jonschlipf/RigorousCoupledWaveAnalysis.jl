@@ -61,22 +61,7 @@ function drawable(c::Combination)
     end
     return x,y
 end
-struct Ellipse <: Geometry
-    rx::Float64
-    ry::Float64
-end
-function reciprocal(e::Ellipse,dnx,dny)
-    return ellipft(e.rx,e.ry,dnx,dny)
-end
 
-function drawable(c::Ellipse)
-    phivals=2pi*(0:.01:1)
-    return c.rx*.5cos.(phivals),c.ry*.5sin.(phivals)
-end
-
-struct arbitrary <: Geometry
-    mask::Array{Float64,2}
-end
 
 
 abstract type Layer end
