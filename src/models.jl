@@ -1,10 +1,12 @@
 
 
 module models
-include("shapes.jl")
+
+using ..ft2d
 using ..materials
 
-using .shapes
+include("shapes.jl")
+
 
 export Custom,Layer,PlainLayer,PatternedLayer,RCWAModel,Circle,Rectangle,Ellipse,reciprocal
 export Combination,Rotation,Shift,drawable
