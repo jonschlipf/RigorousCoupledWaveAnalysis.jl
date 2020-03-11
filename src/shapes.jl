@@ -1,6 +1,6 @@
 module shapes
 
-using ..ft2d
+using ...ft2d
 export Circle,Rectangle,Custom,reciprocal,drawable
 
 struct Circle <: Geometry
