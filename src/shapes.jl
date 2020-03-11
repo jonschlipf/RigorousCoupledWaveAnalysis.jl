@@ -1,8 +1,3 @@
-module shapes
-
-
-export Circle,Rectangle,Custom,reciprocal,drawable
-
 struct Circle <: Geometry
     radius::Float64
 end
@@ -31,6 +26,4 @@ function reciprocal(c::Custom,dnx,dny)
 end
 function drawable(c::Custom)
     return 0,0
-end
-
 end
