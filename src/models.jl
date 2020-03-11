@@ -5,7 +5,7 @@ module models
 using ..ft2d
 using ..materials
 
-include("shapes.jl")
+
 
 
 export Custom,Layer,PlainLayer,PatternedLayer,RCWAModel,Circle,Rectangle,Ellipse,reciprocal
@@ -13,6 +13,7 @@ export Combination,Rotation,Shift,drawable
 
 abstract type Geometry end
 
+include("shapes.jl")
 
 struct Rotation <: Geometry
     G::Geometry
