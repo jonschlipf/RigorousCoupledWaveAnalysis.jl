@@ -1,5 +1,5 @@
 module ft2d
-using SpecialFunctions
+using SpecialFunctions,FFTW
 export rectft,circft,ellipft,recip2real,recipvec2real,real2recip
 
 function rectft(frax,fray,dnx,dny)
@@ -20,24 +20,36 @@ end
 function circft(fra,dnx,dny)
     return ellipft(fra,fra,dnx,dny)
 end
-
-function real2recip(dnx,dny,f,x,y)
-    M=Int(sqrt(size(dnx,1)))
-    M2=2M-1
-    Fs=zeros(M2,M2)*1im
-    for i=1:M2
-        for j=1:M2
-            Fs[i,j]=length(x)^-1*sum(f.*exp.(-2im*π*(x*(i-M)+y*(j-M))))
+function real2recip(dnx,dny,f)
+    dnx=(dnx.+size(f,1)).%size(f,1).+1
+    dny=(dny.+size(f,2)).%size(f,2).+1
+    F2=fft(ifftshift(f))/length(f)
+    F3=0.0im*dnx
+    for i=1:size(F3,1)
+        for j=1:size(F3,2)
+            F3[i,j]=F2[dnx[i,j],dny[i,j]]
         end
     end
-    F=0.0im*dnx
-    for i=1:size(F,1)
-        for j=1:size(F,2)
-            F[i,j]=Fs[dnx[i,j]+M,dny[i,j]+M]
-        end
-    end
-    return F
+    return F3
 end
+
+#function real2recip(dnx,dny,f,x,y)
+#    M=Int(sqrt(size(dnx,1)))
+#    M2=2M-1
+#    Fs=zeros(M2,M2)*1im
+#    for i=1:M2
+#        for j=1:M2
+#            Fs[i,j]=length(x)^-1*sum(f.*exp.(-2im*π*(x*(i-M)+y*(j-M))))
+#        end
+#    end
+#    F=0.0im*dnx
+#    for i=1:size(F,1)
+#        for j=1:size(F,2)
+#            F[i,j]=Fs[dnx[i,j]+M,dny[i,j]+M]
+#        end
+#    end
+#    return F
+#end
 
 function recip2real(dnx,dny,F,x,y)
     f=zeros(size(x))*1im
