@@ -9,7 +9,7 @@ using ..materials
 
 
 export Custom,Layer,PlainLayer,PatternedLayer,RCWAModel,Circle,Rectangle,Ellipse,reciprocal
-export Combination,Rotation,Shift,drawable
+export Combination,Rotation,Shift,drawable,Geometry
 
 abstract type Geometry end
 
