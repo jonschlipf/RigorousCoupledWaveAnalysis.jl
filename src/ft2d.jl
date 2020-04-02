@@ -41,24 +41,7 @@ end
 #f: bitmask to be transformed
 #x,y: 2D arrays of the x and y coordinate in real space
 #Output: reciprocal space image of the bitmask
-function real2recip(dnx,dny,f,x,y)
-    #number of reciprocal lattice vectors
-    M=Int(sqrt(size(dnx,1)))
-    #max difference from zero
-    M2=2M-1
-    #initialize array of unique values
-    Fs=zeros(M2,M2)*1im
-    #iterate over reciprocal space
-    for i=1:M2
-        for j=1:M2
-            Fs[i,j]=length(x)^-1*sum(f.*exp.(-2im*π*(x*(i-M)+y*(j-M))))
-        end
-    end
-    #distribute over full reciprocal space map
-    F=0.0im*dnx
-    for i=1:size(F,1)
-        for j=1:size(F,2)
-            F[i,j]=Fs[dnx[i,j]+M,dny[i,j]+M]
+
 
 function real2recip(dnx,dny,f)
     dnx=(dnx.+size(f,1)).%size(f,1).+1
