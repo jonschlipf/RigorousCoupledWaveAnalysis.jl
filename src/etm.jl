@@ -1,3 +1,4 @@
+#Enhanced transmission matrix algorithm by Moharam et al. 
 module etm
 using LinearAlgebra
 using ..common
