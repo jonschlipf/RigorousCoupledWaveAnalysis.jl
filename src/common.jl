@@ -90,14 +90,15 @@ function eigenmodes(g::RcwaGrid,λ,l::Array{Layer,1})
     end
     return rt
 end
+"""
+    halfspace(Kx,Ky,ε)
 
-#Compute the eigenmodes of a halfspace
-#Input:
-#Kx: square of kx component of the wave vector for all reciprocal space vectors
-#Ky: square of ky component of the wave vector for all reciprocal space vectors
-#ε: permittivity
-#Output:
-#Halfspace eigenmode object
+Compute the eigenmodes of a halfspace
+# Arguments
+* `Kx` : kx component of the wave vector in reciprocal space
+* `Ky` : ky component of the wave vector in reciprocal space
+* `ε` : complex permittivity of the halfspace material
+"""
 function halfspace(Kx,Ky,ε)
     Kz=sqrt.(Complex.(ε*I-Kx*Kx-Ky*Ky))
     Q=[Kx*Ky ε*I-Kx*Kx;Ky*Ky-ε*I -Ky*Kx]
@@ -106,62 +107,81 @@ function halfspace(Kx,Ky,ε)
     return Halfspace(Kz,V)
 end
 
-#Utility function for the eigenmodes an array (stack) of layers
-#Input:
-#g: grid object
-#λ: free space wavelength (for permittivity computation)
-#l: 1D array of layer objects
-#Output: 1D array of eigenmode objects
+"""
+    slicehalf(e)
 
-
-#just slices a vector e in half
+Just slices a vector in two vectors of half length
+# Arguments
+* `e` : vector to be halfed
+"""
 function slicehalf(e)
     mylength=convert(Int64,size(e,1)/2)
     return e[1:mylength,:],e[mylength+1:end,:]
 end
-#converts reciprocal-space electric field (in substrate or superstrate) to power flow
-#Input:
-#ex,ey,ez: components of the electric field
-#Kz: z component of the wavevector in the medium
-#k0: wavevector in free space
-#Output: power flow
-function e2p(ex,ey,ez,Kz,kz0)
+
+"""
+    e2p(ex,ey,ez,Kz,k0)
+
+Converts the reciprocal-space electric field (in a substrate or superstrate) into a power flow
+# Arguments
+* `ex` : x component of the electric field in reciprocal space
+* `ey` : y component of the electric field in reciprocal space
+* `ez` : z component of the electric field in reciprocal space
+* `Kz` : z component of the wavevector in the medium
+* `k0` : wave vector in free space
+"""
+
+function e2p(ex,ey,ez,Kz,k0)
     #amplitudes squared
     P=abs.(ex).^2+abs.(ey).^2+abs.(ez).^2
     #weight by z component
-    P=sum(real.(Kz)*P/real(kz0))
+    P=sum(real.(Kz)*P/real(k0))
     return P
 end
-#converts amplitude vector (in substrate or superstrate) to power flow
-#Input:
-#a: amplitude vector
-#W: eigenmodes
-#ex,ey,ez: components of the electric field
-#Kx,Ky,Kz: components of the wavevector in the medium
-#kz0: wavevector in free space
-#Output: power flow
-function a2p(a,W,Kx,Ky,Kz,kz0)
+"""
+    a2p(a,W,Kx,Ky,Kz,k0)
+
+converts an amplitude vector (in substrate or superstrate) to power flow
+# Arguments
+* `a` : x amplitude vector
+* `W` : eigenmodes of the halfspace
+* `Kx` : x component of the wavevector in the medium
+* `Ky` : y component of the wavevector in the medium
+* `Kz` : z component of the wavevector in the medium
+* `k0` : wave vector in free space
+"""
+
+function a2p(a,W,Kx,Ky,Kz,k0)
     ex,ey,ez=a2e(a,W,Kx,Ky,Kz)
-    return e2p(ex,ey,ez,Kz,kz0)
+    return e2p(ex,ey,ez,Kz,k0)
 end
-#converts amplitude vector (in substrate or superstrate) to electric field
-#Input:
-#a: amplitude vector
-#W: eigenmodes
-#Kx,Ky,Kz: components of the k vector in the medium
-#Output: electric field components
+"""
+    a2e(a,W,Kx,Ky,Kz)
+
+converts an amplitude vector (in substrate or superstrate) to reciprocal-space electric fields
+# Arguments
+* `a` : x amplitude vector
+* `W` : eigenmodes of the halfspace
+* `Kx` : x component of the wavevector in the medium
+* `Ky` : y component of the wavevector in the medium
+* `Kz` : z component of the wavevector in the medium
+"""
+
 function a2e(a,W,Kx,Ky,Kz)
     e=W*a
     ex,ey=slicehalf(e)
     ez=-Kz\(Kx*ex+Ky*ey)
     return ex,ey,ez
 end
-#converts amplitude vector to electric field ex and ey
-#this if for Poynting vector calc, where the z component is not needed
-#Input:
-#a: amplitude vector
-#W: eigenmodes
-#Output: electric field components ex and ey
+"""
+    a2e2d(a,W)
+
+Converts an amplitude vector (in substrate or superstrate) to reciprocal-space electric fields Ex and Ey.
+This is a "light" version of the "a2e" method.
+# Arguments
+* `a` : x amplitude vector
+* `W` : eigenmodes of the halfspace
+"""
 function a2e2d(a,W)
     e=W*a
     ex,ey=slicehalf(e)
