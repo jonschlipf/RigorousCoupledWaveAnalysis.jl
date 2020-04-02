@@ -1,9 +1,9 @@
 
 
-module models
 
-using ..ft2d
-using ..materials
+
+
+
 
 
 
@@ -39,5 +39,3 @@ end
 #function plainLayer(thi,mat)
 #    return PlainLayer(thi,mat)
 #end
-
-end

@@ -1,5 +1,5 @@
 #2D fourier transform (inefficient, but does the job)
-module ft2d
+
 using SpecialFunctions,FFTW
 export rectft,circft,ellipft,recip2real,recipvec2real,real2recip
 #2D Fourier transform of a rectangle
@@ -111,5 +111,4 @@ function recipvec2real(nx,ny,F,x,y)
         end
     end
     return f
-end
 end

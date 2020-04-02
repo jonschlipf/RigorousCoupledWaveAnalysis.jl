@@ -1,4 +1,4 @@
-module materials
+
 using Interpolations
 
 export Material,ConstantPerm,get_permittivity,InterpolPerm,ModelPerm
@@ -25,5 +25,4 @@ function get_permittivity(mat::InterpolPerm,λ)
 end
 function get_permittivity(mat::ModelPerm,λ)
     return Complex(mat.f(λ))
-end
 end

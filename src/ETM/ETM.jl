@@ -1,10 +1,7 @@
-#Enhanced transmission matrix algorithm by Moharam et al. 
+#Enhanced transmission matrix algorithm by Moharam et al.
 module etm
 using LinearAlgebra
 using ..common
-using ..models
-using ..grids
-using ..materials
 export etmsource,etm_reftra
 function F(em)
     return [em.W em.W;-em.V em.V]

@@ -1,9 +1,6 @@
-module scatterMatrices
+
 using LinearAlgebra
-using ..materials
-using ..models
-using ..common
-using ..grids
+
 export ScatterMatrix,scattermatrix_ref,scattermatrix_tra,scattermatrix_layer,concatenate,scatMatrices
 struct ScatterMatrix
     S11::Array{Complex{Float64},2}
@@ -67,5 +64,4 @@ function concatenate(Sin::Array{ScatterMatrix,1})
         Sout=concatenate(Sout,Sin[i])
     end
     return Sout
-end
 end

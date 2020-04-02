@@ -2,9 +2,10 @@
 
 module  common
 using LinearAlgebra
-using ..materials
-using ..models
-using ..grids
+include("ft2d.jl")
+include("materials.jl")
+include("models.jl")
+include("grids.jl")
 export Eigenmodes,Halfspace
 export eigenmodes,halfspace
 export a2e,a2e2d,a2p,e2p,slicehalf

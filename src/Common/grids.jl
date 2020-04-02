@@ -1,7 +1,6 @@
-module grids
+
 using LinearAlgebra
-using ..models
-using ..materials
+
 export Meshgrid,ngrid,kgrid,meshgrid,Rcwagrid,rcwagrid,modes_freespace,grid,RcwaGrid
 
 struct Meshgrid
@@ -84,6 +83,4 @@ function modes_freespace(Kx,Ky)
     #W0=I+0*Q0
     V0=Q0/Diagonal(q0)
     return V0,Kz0
-end
-
 end

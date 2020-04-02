@@ -2,13 +2,9 @@ module srcwa
 using LinearAlgebra
 export srcwa_reftra,a2p,slicehalf,scatterSource,srcwa_matrices,Srcwa_matrices,srcwa_amplitudes,srcwa_abs
 export srcwa_fields
-using ..models
-using ..materials
-using ..common
-using ..grids
-using ..scatterMatrices
-using ..ft2d
 
+using ..common
+include("scatterMatrices.jl")
 
 
 function scatterSource(kinc,Nx,Ny)
