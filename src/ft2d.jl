@@ -1,6 +1,6 @@
 #2D fourier transform (inefficient, but does the job)
 module ft2d
-using SpecialFunctions
+using SpecialFunctions,FFTW
 export rectft,circft,ellipft,recip2real,recipvec2real,real2recip
 #2D Fourier transform of a rectangle
 #Input:
@@ -34,6 +34,7 @@ end
 function circft(fra,dnx,dny)
     return ellipft(fra,fra,dnx,dny)
 end
+<<<<<<< HEAD
 #transforms an arbitrary bitmask f to reciprocal space
 #Input:
 #dnx,dny: reciprocal lattice grid
@@ -58,16 +59,48 @@ function real2recip(dnx,dny,f,x,y)
     for i=1:size(F,1)
         for j=1:size(F,2)
             F[i,j]=Fs[dnx[i,j]+M,dny[i,j]+M]
+=======
+function real2recip(dnx,dny,f)
+    dnx=(dnx.+size(f,1)).%size(f,1).+1
+    dny=(dny.+size(f,2)).%size(f,2).+1
+    F2=fft(ifftshift(f))/length(f)
+    F3=0.0im*dnx
+    for i=1:size(F3,1)
+        for j=1:size(F3,2)
+            F3[i,j]=F2[dnx[i,j],dny[i,j]]
+>>>>>>> c69b66c5c2d065e408d1ab7ff2665d81f229fad8
         end
     end
-    return F
+    return F3
 end
+<<<<<<< HEAD
 #transforms a reciprocal space 2D map (for example permittivity) to real space
 #Input:
 #dnx,dny: reciprocal lattice grid
 #F: reciprocal space map to be transformed
 #x,y: 2D arrays of the x and y coordinate in real space
 #Output: real space image
+=======
+
+#function real2recip(dnx,dny,f,x,y)
+#    M=Int(sqrt(size(dnx,1)))
+#    M2=2M-1
+#    Fs=zeros(M2,M2)*1im
+#    for i=1:M2
+#        for j=1:M2
+#            Fs[i,j]=length(x)^-1*sum(f.*exp.(-2im*π*(x*(i-M)+y*(j-M))))
+#        end
+#    end
+#    F=0.0im*dnx
+#    for i=1:size(F,1)
+#        for j=1:size(F,2)
+#            F[i,j]=Fs[dnx[i,j]+M,dny[i,j]+M]
+#        end
+#    end
+#    return F
+#end
+
+>>>>>>> c69b66c5c2d065e408d1ab7ff2665d81f229fad8
 function recip2real(dnx,dny,F,x,y)
     #initialize
     f=zeros(size(x))*1im
