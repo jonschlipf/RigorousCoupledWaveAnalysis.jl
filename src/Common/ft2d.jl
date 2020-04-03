@@ -44,14 +44,15 @@ end
 
 
 function real2recip(dnx,dny,f)
-    dnx=(dnx.+size(f,1)).%size(f,1).+1
-    dny=(dny.+size(f,2)).%size(f,2).+1
-    F2=fft(ifftshift(f))/length(f)
+    #dnx=(dnx.+size(f,1)).%size(f,1).+1
+    #dny=(dny.+size(f,2)).%size(f,2).+1
+    a=maximum(dnx)
+    b=maximum(dny)
+    F2=fftshift(fft(f))/length(f)
     F3=0.0im*dnx
     for i=1:size(F3,1)
         for j=1:size(F3,2)
-            F3[i,j]=F2[dnx[i,j],dny[i,j]]
-
+            F3[i,j]=F2[dnx[i,j]+a+1,dny[i,j]+b+1]
         end
     end
     return F3
@@ -83,19 +84,32 @@ end
 #    return F
 #end
 
-
-function recip2real(dnx,dny,F,x,y)
-    #initialize
-    f=zeros(size(x))*1im
-    #iterate over real space
-    for i=1:size(x,1)
-        for j=1:size(y,2)
-            #inverse Fourier transform
-            f[i,j]=size(dnx,1)^-1*sum(F.*exp.(1im*x[i,j]*dnx*2*pi+1im*y[i,j]*dny*2*pi))
+function recip2real(dnx,dny,F)
+    a=maximum(abs.(dnx)) #the maximum dnx value, =2N
+    b=maximum(abs.(dny))
+    Fred=zeros(2a+1,2b+1)*1im #reduced set with unique values of F
+    for i=1:size(Fred,1) #iterate
+        for j=1:size(Fred,2)
+            indices=findall((dnx.==i-a-1).&(dny.==j-b-1)) #find the element with desired dnx and dny
+            Fred[i,j]=F[indices[1]] #put into new array
         end
     end
-    return f
+    return ifft(ifftshift(Fred))*length(Fred) #transform to real space domain
 end
+
+
+#function recip2real(dnx,dny,F,x,y)
+    #initialize
+#    f=zeros(size(x))*1im
+    #iterate over real space
+#    for i=1:size(x,1)
+#        for j=1:size(y,2)
+            #inverse Fourier transform
+#            f[i,j]=size(dnx,1)^-1*sum(F.*exp.(1im*x[i,j]*dnx*2*pi+1im*y[i,j]*dny*2*pi))
+#        end
+#    end
+#    return f
+#end
 
 #transforms a reciprocal space 1D vector (for example electric field) to real space
 #Input:

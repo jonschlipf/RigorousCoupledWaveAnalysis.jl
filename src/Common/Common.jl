@@ -1,6 +1,6 @@
 #Common methodes for computations with eigenmodes and transforms
 
-module  common
+module  Common
 using LinearAlgebra
 include("ft2d.jl")
 include("materials.jl")

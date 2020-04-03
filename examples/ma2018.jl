@@ -5,7 +5,7 @@ Zhijie Ma, Yi Li, Yang Li, Yandong Gong, Stefan A. Maier, and Minghui Hong,
 Opt. Express 26, 6067-6078 (2018)
 """
 #Figure 2 A
-
+using RCWA
 
 #required materials
 ge=InterpolPerm(ge_nunley) #Ge from interpolated measured values

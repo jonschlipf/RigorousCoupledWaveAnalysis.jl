@@ -15,9 +15,9 @@ include("ETM/ETM.jl")
 include("BasicMaterials/BasicMaterials.jl")
 
 
-using .common
-using .srcwa
-using .etm
+using .Common
+using .SRCWA
+using .ETM
 using .BasicMaterials
 
 

@@ -1,9 +1,9 @@
-module srcwa
+module SRCWA
 using LinearAlgebra
 export srcwa_reftra,a2p,slicehalf,scatterSource,srcwa_matrices,Srcwa_matrices,srcwa_amplitudes,srcwa_abs
 export srcwa_fields
 
-using ..common
+using ..Common
 include("scatterMatrices.jl")
 
 
