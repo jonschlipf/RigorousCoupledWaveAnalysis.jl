@@ -46,8 +46,8 @@ end
 function real2recip(dnx,dny,f)
     #dnx=(dnx.+size(f,1)).%size(f,1).+1
     #dny=(dny.+size(f,2)).%size(f,2).+1
-    a=maximum(dnx)
-    b=maximum(dny)
+    a=2maximum(dnx)
+    b=2maximum(dny)
     F2=fftshift(fft(f))/length(f)
     F3=0.0im*dnx
     for i=1:size(F3,1)
@@ -85,8 +85,8 @@ end
 #end
 
 function recip2real(dnx,dny,F)
-    a=maximum(abs.(dnx)) #the maximum dnx value, =2N
-    b=maximum(abs.(dny))
+    a=2maximum(abs.(dnx)) #the maximum dnx value, =2N
+    b=2maximum(abs.(dny))
     Fred=zeros(2a+1,2b+1)*1im #reduced set with unique values of F
     for i=1:size(Fred,1) #iterate
         for j=1:size(Fred,2)
