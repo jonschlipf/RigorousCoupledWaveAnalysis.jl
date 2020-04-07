@@ -39,7 +39,7 @@ Tlf=zeros(length(wls)) #Forward lcp transmissivity
 for i=1:length(wls) #iterate over all wavelengths
     λ=wls[i] #get wavelength from array
     grd=rcwagrid(mdl,N,N,λ,1E-5,0,a,a) #build a reciprocal space grid
-    ste,stm=etmsource(grd.kin,N,N) #define source
+    ste,stm=etmSource(grd.kin,N,N) #define source
     Rlf[i],Tlf[i]=etm_reftra(sqrt(.5)*(stm+1im*ste),mdl,grd,λ) #lcp propagation
     Rrf[i],Trf[i]=etm_reftra(sqrt(.5)*(1im*stm+ste),mdl,grd,λ) #rcp propagation
 end
@@ -63,7 +63,7 @@ for i=1:length(wls)
     λ=wls[i]
     println(λ)
     grd=rcwagrid(mdl,N,N,λ,1E-5,0,a,a)
-    ste,stm=etmsource(grd.kin,N,N)
+    ste,stm=etmSource(grd.kin,N,N)
     Rlb[i],Tlb[i]=etm_reftra(sqrt(.5)*(stm+1im*ste),mdl,grd,λ)
     Rrb[i],Trb[i]=etm_reftra(sqrt(.5)*(1im*stm+ste),mdl,grd,λ)
 end

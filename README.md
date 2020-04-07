@@ -74,13 +74,13 @@ grd=rcwagrid(Mdl,N,N,λ,θ,α,ax,ay) #create the grid
 One can employ the enhanced transmission matrix (etm) approach to solve the Maxwell equations for their system. This will yield the reflected and transmitted power.
 
 ```julia
-ste,stm=etmsource(grd.kin,N,N)    #create a source object
+ste,stm=etmSource(grd.kin,N,N)    #create a source object
 Rte,Tte=etm_reftra(ste,mdl,grd,λ) #run the etm algorithm for te polarization
 Rtm,Ttm=etm_reftra(stm,mdl,grd,λ) #run the etm algorithm for tm polarization
 ```
 The scatter matrix method can be called in the same manner.
 ```julia
-ste,stm=scattersource(grd.kin,N,N)    #create a source object
+ste,stm=scatterSource(grd.kin,N,N)    #create a source object
 Rte,Tte=srcwa_reftra(ste,mdl,grd,λ) #run the srcwa algorithm for te polarization
 Rtm,Ttm=srcwa_reftra(stm,mdl,grd,λ) #run the srcwa algorithm for tm polarization
 ```

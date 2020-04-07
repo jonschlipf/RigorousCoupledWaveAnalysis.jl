@@ -1,11 +1,9 @@
 module BasicMaterials
 
-greet() = print("Hello World!")
-
-export ge_nunley,si_schinke,sio2_malitson,zno_bond
+export ge_nunley,si_schinke,sio2_malitson,zno_bond,al_rakic
 
 using CSV,Interpolations
-#include("mats.jl")
+include("rakic.jl")
 
 ge_nunley_raw=Matrix(CSV.read(string(@__DIR__,"/ge_nunley.txt"),delim=" "))
 ge_nunley_n=cat(ge_nunley_raw[:,1],ge_nunley_raw[:,2]+1im*ge_nunley_raw[:,3],dims=2)
@@ -24,5 +22,7 @@ si_schinke_raw=Matrix(CSV.read(string(@__DIR__,"/si_schinke.txt"),delim=" "))
 si_schinke_n=cat(si_schinke_raw[:,1],si_schinke_raw[:,2]+1im*si_schinke_raw[:,3],dims=2)
 si_schinke=extrapolate(interpolate((1000si_schinke_raw[:,1],),si_schinke_n[:,2].^2,Gridded(Linear())),Flat())
 #C. Schinke, P. C. Peest, J. Schmidt, R. Brendel, K. Bothe, M. R. Vogt, I. Kröger, S. Winter, A. Schirmacher, S. Lim, H. T. Nguyen, D. MacDonald. Uncertainty analysis for the coefficient of band-to-band absorption of crystalline silicon. AIP Advances 5, 67168 (2015)
+
+
 
 end # module

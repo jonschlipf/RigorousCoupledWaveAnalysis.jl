@@ -2,7 +2,7 @@
 module ETM
 using LinearAlgebra
 using ..Common
-export etmsource,etm_reftra
+export etmSource,etm_reftra
 function F(em)
     return [em.W em.W;-em.V em.V]
 end
@@ -37,7 +37,7 @@ function  etm_reftra(s,m::RCWAModel,grd::RcwaGrid,λ)
     return R,T
 end
 
-function etmsource(kinc,Nx,Ny)
+function etmSource(kinc,Nx,Ny)
     width=(Nx*2+1)*(Ny*2+1)
     #vertical
     normal=[0,0,1]
