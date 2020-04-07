@@ -45,8 +45,8 @@ end
 
 function real2recip(dnx,dny,f)
     F0=fftshift(fft(f))/length(f)
-    a=Int64(ceil(size(f,1)/2))
-    b=Int64(ceil(size(f,2)/2))
+    a=Int64(ceil(size(f,1)/2+.5))
+    b=Int64(ceil(size(f,2)/2+.5))
     F=0.0im*dnx
     for i=1:size(F,1)
         for j=1:size(F,2)
@@ -86,8 +86,8 @@ function recip2real(dnx,dny,F)
     a=maximum(abs.(dnx)) #the maximum dnx value, =2N
     b=maximum(abs.(dny))
     F0=zeros(2a+1,2b+1)*1im #reduced set with unique values of F
-    a=Int64(ceil(size(F0,1)/2))
-    b=Int64(ceil(size(F0,2)/2))
+    a=Int64(ceil(size(F0,1)/2+.5))
+    b=Int64(ceil(size(F0,2)/2+.5))
     for i=1:size(F0,1) #iterate
         for j=1:size(F0,2)
             indices=findall((dnx.==i-a).&(dny.==j-b)) #find the element with desired dnx and dny
