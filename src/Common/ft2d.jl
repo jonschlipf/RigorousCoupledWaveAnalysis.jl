@@ -97,7 +97,22 @@ function recip2real(dnx,dny,F)
     return ifft(ifftshift(F0))*length(F0) #transform to real space domain
 end
 
-
+function recip2real(dnx,dny,F,sx,sy)
+    a=maximum(abs.(dnx)) #the maximum dnx value, =2N
+    b=maximum(abs.(dny))
+    F0=zeros(sx,sy)*1im #reduced set with unique values of F
+    a=Int64(ceil(size(F0,1)/2+.5))
+    b=Int64(ceil(size(F0,2)/2+.5))
+    for i=1:size(F0,1) #iterate
+        for j=1:size(F0,2)
+            indices=findall((dnx.==i-a).&(dny.==j-b)) #find the element with desired dnx and dny
+            if length(indices)>0
+                F0[i,j]=F[indices[1]] #put into new array
+            end
+        end
+    end
+    return ifft(ifftshift(F0))*length(F0) #transform to real space domain
+end
 #function recip2real(dnx,dny,F,x,y)
     #initialize
 #    f=zeros(size(x))*1im
