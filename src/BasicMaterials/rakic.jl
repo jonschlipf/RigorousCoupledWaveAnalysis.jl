@@ -13,7 +13,7 @@ end
 
 function LorentzDrude(m::Metal,λ)
     Ωp=sqrt(m.f0)*m.ωp
-    ω=1.2398/λ
+    ω=1239.8/λ
     epsilon=1 .-(Ωp^2)/ω/(ω-1im*m.Γ0)
     for o in m.oscillators
         epsilon+=o.f*m.ωp^2/(o.ω^2-ω^2+1im*ω*o.Γ)
