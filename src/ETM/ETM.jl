@@ -30,8 +30,8 @@ function  etm_reftra(ref,tra,em,s,grd)
 end
 
 function  etm_reftra(s,m::RCWAModel,grd::RcwaGrid,λ)
-    ref=halfspace(grd.Kx,grd.Ky,get_permittivity(m.εsup,λ))
-    tra=halfspace(grd.Kx,grd.Ky,get_permittivity(m.εsub,λ))
+    ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
+    tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
     ems=eigenmodes(grd,λ,m.layers)
     R,T=etm_reftra(ref,tra,ems,s,grd)
     return R,T

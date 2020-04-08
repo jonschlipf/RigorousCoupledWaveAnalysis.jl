@@ -29,8 +29,8 @@ end
 
 
 function srcwa_reftra(a0,model::RCWAModel,grd::RcwaGrid,λ)
-    ref=halfspace(grd.Kx,grd.Ky,get_permittivity(model.εsup,λ))
-    tra=halfspace(grd.Kx,grd.Ky,get_permittivity(model.εsub,λ))
+    ref=halfspace(grd.Kx,grd.Ky,model.εsup,λ)
+    tra=halfspace(grd.Kx,grd.Ky,model.εsub,λ)
     S=scattermatrix_ref(ref,grd.V0)
     for ct=1:length(model.layers)
         S=concatenate(S,scattermatrix_layer(eigenmodes(grd.dnx,grd.dny,grd.Kx,grd.Ky,grd.k0,λ,model.layers[ct]),grd.V0))
@@ -63,7 +63,7 @@ function srcwa_abs(a,b,grd::RcwaGrid)
     return p
 end
 
-function srcwa_fields(a,b,em,grd,sz)
+function srcwa_fields(a,b,ly,em,grd,sz)
     W0=I+0*grd.V0
     x=[r  for r in -sz[1]/2+.5:sz[1]/2-.5, c in -sz[2]/2+.5:sz[2]/2-.5]/sz[1]
     y=[c  for r in -sz[1]/2+.5:sz[1]/2-.5, c in -sz[2]/2+.5:sz[2]/2-.5]/sz[2]
@@ -78,8 +78,11 @@ function srcwa_fields(a,b,em,grd,sz)
     for zind=1:sz[3]
         #propagation of the waves
         a=(em.X^((zind-.5)/sz[3]))*ain
+        a=exp(Matrix(em.q*grd.k0*ly.thickness*(zind-1)/sz[3]))*ain
+
         #b=exp(-Matrix(q)*k0*(zind-1))*bout
         b=(em.X^((sz[3]+.5-zind)/sz[3]))*bin
+        b=exp(Matrix(em.q*grd.k0*ly.thickness*(sz[3]-zind)/sz[3]))*bin
         #convert amplitude vectors to electric fields
 
         ex,ey,ez=a2e(a+b,em.W,grd.Kx,grd.Ky,grd.Kz0)

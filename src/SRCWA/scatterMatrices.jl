@@ -10,8 +10,8 @@ struct ScatterMatrix
 end
 function scatMatrices(m::RCWAModel,g::RcwaGrid,λ)
     s=Array{ScatterMatrix,1}(undef,length(m.layers)+2)
-    s[1]=scattermatrix_ref(halfspace(g.Kx,g.Ky,get_permittivity(m.εsup,λ)),g.V0)
-    s[end]=scattermatrix_tra(halfspace(g.Kx,g.Ky,get_permittivity(m.εsub,λ)),g.V0)
+    s[1]=scattermatrix_ref(halfspace(g.Kx,g.Ky,m.εsup,λ),g.V0)
+    s[end]=scattermatrix_tra(halfspace(g.Kx,g.Ky,m.εsub,λ),g.V0)
     for cnt=2:length(m.layers)+1
         s[cnt]=scattermatrix_layer(eigenmodes(g,λ,m.layers[cnt-1]),g.V0)
     end

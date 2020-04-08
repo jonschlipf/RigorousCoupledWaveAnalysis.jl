@@ -8,8 +8,8 @@
 
 
 
-export Custom,Layer,PlainLayer,PatternedLayer,RCWAModel,Circle,Rectangle,Ellipse,reciprocal
-export Combination,Rotation,Shift,drawable,Geometry
+export Custom,Layer,SimpleLayer,PatternedLayer,RCWAModel,Circle,Rectangle,Ellipse,reciprocal
+export Combination,Rotation,Shift,drawable,Geometry,AnisotropicLayer
 
 abstract type Geometry end
 
@@ -25,7 +25,11 @@ struct PatternedLayer <: Layer
     materials::Array{Material,1}
     geometries::Array{Geometry,1}
 end
-struct PlainLayer <: Layer
+struct SimpleLayer <: Layer
+    thickness::Float64
+    material::Material
+end
+struct AnisotropicLayer <: Layer
     thickness::Float64
     material::Material
 end
@@ -36,6 +40,6 @@ struct RCWAModel
     εsub::Material
 end
 
-#function plainLayer(thi,mat)
-#    return PlainLayer(thi,mat)
+#function SimpleLayer(thi,mat)
+#    return SimpleLayer(thi,mat)
 #end
