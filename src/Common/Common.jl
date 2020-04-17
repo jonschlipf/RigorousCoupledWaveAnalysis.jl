@@ -55,11 +55,12 @@ function eigenmodes(dnx,dny,Kx,Ky,k0,λ,l::PatternedLayer)
     end
     #add the permittivity for all inclusions
     for ct=1:length(l.geometries)
-        εxx+=reciprocal(l.geometries[ct],dnx,dny)*(get_permittivity(l.materials[ct+1],λ,1)-get_permittivity(l.materials[ct],λ,1))
-        εxy+=reciprocal(l.geometries[ct],dnx,dny)*(get_permittivity(l.materials[ct+1],λ,2)-get_permittivity(l.materials[ct],λ,2))
-        εyx+=reciprocal(l.geometries[ct],dnx,dny)*(get_permittivity(l.materials[ct+1],λ,3)-get_permittivity(l.materials[ct],λ,3))
-        εyy+=reciprocal(l.geometries[ct],dnx,dny)*(get_permittivity(l.materials[ct+1],λ,4)-get_permittivity(l.materials[ct],λ,4))
-        εzz+=reciprocal(l.geometries[ct],dnx,dny)*(get_permittivity(l.materials[ct+1],λ,5)-get_permittivity(l.materials[ct],λ,5))
+        rec=reciprocal(l.geometries[ct],dnx,dny)
+        εxx+=rec*(get_permittivity(l.materials[ct+1],λ,1)-get_permittivity(l.materials[ct],λ,1))
+        εxy+=rec*(get_permittivity(l.materials[ct+1],λ,2)-get_permittivity(l.materials[ct],λ,2))
+        εyx+=rec*(get_permittivity(l.materials[ct+1],λ,3)-get_permittivity(l.materials[ct],λ,3))
+        εyy+=rec*(get_permittivity(l.materials[ct+1],λ,4)-get_permittivity(l.materials[ct],λ,4))
+        εzz+=rec*(get_permittivity(l.materials[ct+1],λ,5)-get_permittivity(l.materials[ct],λ,5))
     end
     #reciprocal of permittivity
     η=I/εzz
