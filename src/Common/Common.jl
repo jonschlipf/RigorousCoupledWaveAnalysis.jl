@@ -44,28 +44,31 @@ Compute the eigenmodes of a layer
 function eigenmodes(dnx,dny,Kx,Ky,k0,λ,l::PatternedLayer)
     #get the base permittivity
     εxx=Kx*0+get_permittivity(l.materials[1],λ,1)*I
-    if typeof(l.materials[1])<:Isotropic
-        εzz=εyy=εxx
-        εxy=εyx=0εxx
-    else
-        εxy=Kx*0+get_permittivity(l.materials[1],λ,2)*I
-        εyx=Kx*0+get_permittivity(l.materials[1],λ,3)*I
-        εyy=Kx*0+get_permittivity(l.materials[1],λ,4)*I
-        εzz=Kx*0+get_permittivity(l.materials[1],λ,5)*I
-    end
+    #if typeof(l.materials[1])<:Isotropic
+    #    εzz=εyy=εxx
+    #    εxy=εyx=0εxx
+    #else
+    #    εxy=Kx*0+get_permittivity(l.materials[1],λ,2)*I
+    #    εyx=Kx*0+get_permittivity(l.materials[1],λ,3)*I
+    #    εyy=Kx*0+get_permittivity(l.materials[1],λ,4)*I
+    #    εzz=Kx*0+get_permittivity(l.materials[1],λ,5)*I
+    #end
     #add the permittivity for all inclusions
     for ct=1:length(l.geometries)
-        εxx+=reciprocal(l.geometries[ct],dnx,dny)*(get_permittivity(l.materials[ct+1],λ,1)-get_permittivity(l.materials[ct],λ,1))
-        εxy+=reciprocal(l.geometries[ct],dnx,dny)*(get_permittivity(l.materials[ct+1],λ,2)-get_permittivity(l.materials[ct],λ,2))
-        εyx+=reciprocal(l.geometries[ct],dnx,dny)*(get_permittivity(l.materials[ct+1],λ,3)-get_permittivity(l.materials[ct],λ,3))
-        εyy+=reciprocal(l.geometries[ct],dnx,dny)*(get_permittivity(l.materials[ct+1],λ,4)-get_permittivity(l.materials[ct],λ,4))
-        εzz+=reciprocal(l.geometries[ct],dnx,dny)*(get_permittivity(l.materials[ct+1],λ,5)-get_permittivity(l.materials[ct],λ,5))
+        rec=reciprocal(l.geometries[ct],dnx,dny)
+        εxx+=rec*(get_permittivity(l.materials[ct+1],λ,1)-get_permittivity(l.materials[ct],λ,1))
+    #    εxy+=rec*(get_permittivity(l.materials[ct+1],λ,2)-get_permittivity(l.materials[ct],λ,2))
+    #    εyx+=rec*(get_permittivity(l.materials[ct+1],λ,3)-get_permittivity(l.materials[ct],λ,3))
+    #    εyy+=rec*(get_permittivity(l.materials[ct+1],λ,4)-get_permittivity(l.materials[ct],λ,4))
+    #    εzz+=rec*(get_permittivity(l.materials[ct+1],λ,5)-get_permittivity(l.materials[ct],λ,5))
     end
     #reciprocal of permittivity
-    η=I/εzz
+    #η=I/εzz
+     η=I/εxx
     #Maxwell equations transformed
     P=[Kx*η*Ky I-Kx*η*Kx;Ky*η*Ky-I -Ky*η*Kx]
-    Q=[Kx*Ky+εyx εyy-Kx*Kx;Ky*Ky-εxx -εxy-Ky*Kx]
+    #Q=[Kx*Ky+εyx εyy-Kx*Kx;Ky*Ky-εxx -εxy-Ky*Kx]
+    Q=[Kx*Ky εxx-Kx*Kx;Ky*Ky-εxx -Ky*Kx]
     #eigenmodes
     ev=eigen(Matrix(P*Q))
     q=Diagonal(sqrt.(Complex.(ev.values)))
