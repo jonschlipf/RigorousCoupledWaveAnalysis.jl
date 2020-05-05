@@ -46,7 +46,7 @@ Geo=Custom(F) #custom geometry object with the defined structure
 There are structures implemented for plain (homogenous) layers and patterned layers. A plain layer requires just a thickness and a material object. A patterned layer is defined by its thickness, an array of materials (at least one) and an array of geometry objects (size should be one smaller than that of the materials array).
 
 ```julia
-L1=PlainLayer(100,M1) #homogenous layer of thickness 100
+L1=SimpleLayer(100,M1) #homogenous layer of thickness 100
 L2=PatternedLayer(200,[M1,M2],[Geo]) #patterned layer of thickness 100 with inclusion of material M1 in a background of M2
 ```
 
