@@ -3,7 +3,7 @@ using LinearAlgebra
 export srcwa_reftra,a2p,slicehalf,scatterSource,srcwa_matrices,Srcwa_matrices,srcwa_amplitudes,srcwa_abs
 export srcwa_fields
 
-export dipoleSource,dipoleRad
+export innerSource,dipoleRad,pointDipole
 
 using ..Common
 include("scatterMatrices.jl")
