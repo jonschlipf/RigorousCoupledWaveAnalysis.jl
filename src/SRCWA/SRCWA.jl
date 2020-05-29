@@ -3,9 +3,11 @@ using LinearAlgebra
 export srcwa_reftra,a2p,slicehalf,scatterSource,srcwa_matrices,Srcwa_matrices,srcwa_amplitudes,srcwa_abs
 export srcwa_fields
 
+export dipoleSource,dipoleRad
+
 using ..Common
 include("scatterMatrices.jl")
-
+include("emission.jl")
 
 function scatterSource(kinc,Nx,Ny)
     #the total number of scattering states

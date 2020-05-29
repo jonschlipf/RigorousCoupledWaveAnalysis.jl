@@ -19,6 +19,8 @@ struct RcwaGrid
     Kz0::Array{Complex{Float64},2}
     nx::Array{Float64,1}
     ny::Array{Float64,1}
+    px::Float64
+    py::Float64
 end
 
 function ngrid(Nx,Ny)
@@ -59,7 +61,7 @@ function rcwagrid(model::RCWAModel,Nx,Ny,λ,θ,α,ax,ay)
     nx,ny,dnx,dny=ngrid(Nx,Ny)
     k0,Kx,Ky,kin=kgrid(nx,ny,θ,α,λ,ax,ay,get_permittivity(model.εsup,λ))
     V0,Kz0=modes_freespace(Kx,Ky)
-    return RcwaGrid(dnx,dny,k0,Kx,Ky,kin,V0,Kz0,nx,ny)
+    return RcwaGrid(dnx,dny,k0,Kx,Ky,kin,V0,Kz0,nx,ny,ax,ay)
 end
 
 """
