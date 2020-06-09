@@ -25,7 +25,7 @@ function dipoleRad(a0,b0,Sout,grd,sub,px,py,pz)
 	exr=recipvec2real(grd.nx,grd.ny,exb,x,y)
 	eyr=recipvec2real(grd.nx,grd.ny,eyb,x,y)
 	ezr=recipvec2real(grd.nx,grd.ny,ezb,x,y)
-	ru=(pxr.*exr+pyr.*eyr+pzr.*ezr)#/sqrt(get_permittivity(m1,2pi/grd.k0))
+	ru=(conj.(pxr).*exr+conj.(pyr).*eyr+conj.(pzr).*ezr)#/sqrt(get_permittivity(m1,2pi/grd.k0))
 	au=.5*2pi/grd.k0/sqrt(grd.px*grd.py)*sum(ru)/length(ru)
 	au=.5sum(ru)/length(ru)
 	
