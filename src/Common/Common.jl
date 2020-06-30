@@ -183,14 +183,14 @@ Converts the reciprocal-space electric field (in a substrate or superstrate) int
 * `ey` : y component of the electric field in reciprocal space
 * `ez` : z component of the electric field in reciprocal space
 * `Kz` : z component of the wavevector in the medium
-* `k0` : wave vector in free space
+* `kz0` : z component of the plane wave wavevector in the superstrate
 """
 
-function e2p(ex,ey,ez,Kz,k0)
+function e2p(ex,ey,ez,Kz,kz0)
     #amplitudes squared
     P=abs.(ex).^2+abs.(ey).^2+abs.(ez).^2
     #weight by z component
-    P=sum(real.(Kz)*P/real(k0))
+    P=sum(real.(Kz)*P/real(kz0))
     return P
 end
 
