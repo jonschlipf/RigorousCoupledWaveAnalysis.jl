@@ -205,12 +205,12 @@ converts an amplitude vector (in substrate or superstrate) to power flow
 * `Kx` : x component of the wavevector in the medium
 * `Ky` : y component of the wavevector in the medium
 * `Kz` : z component of the wavevector in the medium
-* `k0` : wave vector in free space
+* `kz0` : z component of the plane wave wavevector in the superstrate
 """
 
-function a2p(a,W,Kx,Ky,Kz,k0)
+function a2p(a,W,Kx,Ky,Kz,kz0)
     ex,ey,ez=a2e(a,W,Kx,Ky,Kz)
-    return e2p(ex,ey,ez,Kz,k0)
+    return e2p(ex,ey,ez,Kz,kz0)
 end
 """
     a2e(a,W,Kx,Ky,Kz)
