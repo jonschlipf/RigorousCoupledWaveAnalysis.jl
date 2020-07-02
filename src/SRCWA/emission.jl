@@ -8,7 +8,7 @@ end
 function innerSource(grd,px,py,pz,Sin,Sout,eps)
 	#P=2pi/grd.k0/sqrt(grd.px*grd.py)
 	#P=P*
-	P=[-grd.Kx*(eps\pz);-grd.Ky*(eps\pz);-1im*py;1im*px]*1im
+	P=[-grd.Kx*(pz);-grd.Ky*(pz);-1im*py;1im*px]*1im
 	M=[I+Sout.S11 -Sin.S22-I;grd.V0*(I-Sout.S11) grd.V0*(-Sin.S22+I)]
 	prvec=M\P
 	a0,b0=slicehalf(prvec)
