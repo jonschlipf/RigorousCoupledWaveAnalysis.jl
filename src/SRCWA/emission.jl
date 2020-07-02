@@ -29,6 +29,6 @@ function dipoleRad(a0,b0,Sout,grd,sub,px,py,pz)
 	au=.5*2pi/grd.k0/sqrt(grd.px*grd.py)*sum(ru)/length(ru)
 	au=.5sum(ru)/length(ru)
 	rub=(conj.(px).*exb+conj.(py).*eyb+conj.(pz).*ezb)
-	aub=.5sum(rub)/length(rub)
+	aub=.5sum(rub)
 	return au,aub
 end
