@@ -1,8 +1,8 @@
 function pointDipole(grd,px0,py0,pz0)
 	fc=(2pi)^2/grd.px/grd.py
-	jx=1im/grid.k0*ones(length(grd.nx))*px0*sqrt(fc)#this is the real j, not the normalized one
-	jy=1im/grid.k0*ones(length(grd.nx))*py0*sqrt(fc)
-	jz=1im/grid.k0*ones(length(grd.nx))*pz0*sqrt(fc)
+	jx=1im/grd.k0*ones(length(grd.nx))*px0*sqrt(fc)#this is the real j, not the normalized one
+	jy=1im/grd.k0*ones(length(grd.nx))*py0*sqrt(fc)
+	jz=1im/grd.k0*ones(length(grd.nx))*pz0*sqrt(fc)
 	return px,py,pz
 end
 function innerSource(grd,jx,jy,jz,Sin,Sout,eps)
