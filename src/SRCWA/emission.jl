@@ -1,20 +1,20 @@
 function pointDipole(grd,px0,py0,pz0)
-	fc=(2pi/grd.k0)^2/grd.px/grd.py
-	px=ones(length(grd.nx))*px0*sqrt(fc)
-	py=ones(length(grd.nx))*py0*sqrt(fc)
-	pz=ones(length(grd.nx))*pz0*sqrt(fc)
+	fc=(2pi)^2/grd.px/grd.py
+	jx=1im/grid.k0*ones(length(grd.nx))*px0*sqrt(fc)#this is the real j, not the normalized one
+	jy=1im/grid.k0*ones(length(grd.nx))*py0*sqrt(fc)
+	jz=1im/grid.k0*ones(length(grd.nx))*pz0*sqrt(fc)
 	return px,py,pz
 end
-function innerSource(grd,px,py,pz,Sin,Sout,eps)
+function innerSource(grd,jx,jy,jz,Sin,Sout,eps)
 	#P=2pi/grd.k0/sqrt(grd.px*grd.py)
 	#P=P*
-	P=[-grd.Kx*(eps\pz);-grd.Ky*(eps\pz);-1im*py;1im*px]
+	P=[-1im*grd.Kx*(eps\jz);-1im*grd.Ky*(eps\jz);jy;p-jx]*-1im#-1im factor normalizes j
 	M=[I+Sout.S11 -Sin.S22-I;grd.V0*(I-Sout.S11) grd.V0*(-Sin.S22+I)]
 	prvec=M\P
 	a0,b0=slicehalf(prvec)
 	return a0,b0
 end
-function dipoleRad(a0,b0,Sout,grd,sub,px,py,pz)
+function dipoleRad(a0,b0,Sout,grd,sub,jx,jy,jz)
 	exb,eyb,ezb=a2e((I+Sout.S11)*a0,I,grd.Kx,grd.Ky,sub.Kz)
 	#sz=[sqrt(length(grd.nx)),sqrt(length(grd.nx))]
 	#x=[r  for r in -sz[1]/2+.5:sz[1]/2-.5, c in -sz[2]/2+.5:sz[2]/2-.5]/sz[1]
@@ -28,6 +28,6 @@ function dipoleRad(a0,b0,Sout,grd,sub,px,py,pz)
 	#ru=(conj.(pxr).*exr+conj.(pyr).*eyr+conj.(pzr).*ezr)#/sqrt(get_permittivity(m1,2pi/grd.k0))
 	#au=.5*2pi/grd.k0/sqrt(grd.px*grd.py)*sum(ru)/length(ru)
 	#au=.5sum(ru)/length(ru)
-	au=.5sum(conj.(px).*exb+conj.(py).*eyb+conj.(pz).*ezb)
+	au=.5sum(conj.(jx).*exb+conj.(jy).*eyb+conj.(jz).*ezb)
 	return au
 end
