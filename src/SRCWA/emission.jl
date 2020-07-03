@@ -1,14 +1,14 @@
 function pointDipole(grd,px0,py0,pz0)
-	fc=(2pi)^2/grd.px/grd.py
-	jx=1im/grd.k0*ones(length(grd.nx))*px0*sqrt(fc)#this is the real j, not the normalized one
+	fc=(2pi)^2/grd.px/grd.py#prefactor from fourier transform
+	jx=1im/grd.k0*ones(length(grd.nx))*px0*sqrt(fc)#this is the normalized j, not the normalized one
 	jy=1im/grd.k0*ones(length(grd.nx))*py0*sqrt(fc)
 	jz=1im/grd.k0*ones(length(grd.nx))*pz0*sqrt(fc)
-	return px,py,pz
+	return jx,jy,jz
 end
 function innerSource(grd,jx,jy,jz,Sin,Sout,eps)
 	#P=2pi/grd.k0/sqrt(grd.px*grd.py)
 	#P=P*
-	P=[-1im*grd.Kx*(eps\jz);-1im*grd.Ky*(eps\jz);jy;p-jx]*-1im#-1im factor normalizes j
+	P=[-1im*grd.Kx*(eps\jz);-1im*grd.Ky*(eps\jz);jy;p-jx]
 	M=[I+Sout.S11 -Sin.S22-I;grd.V0*(I-Sout.S11) grd.V0*(-Sin.S22+I)]
 	prvec=M\P
 	a0,b0=slicehalf(prvec)
@@ -28,6 +28,6 @@ function dipoleRad(a0,b0,Sout,grd,sub,jx,jy,jz)
 	#ru=(conj.(pxr).*exr+conj.(pyr).*eyr+conj.(pzr).*ezr)#/sqrt(get_permittivity(m1,2pi/grd.k0))
 	#au=.5*2pi/grd.k0/sqrt(grd.px*grd.py)*sum(ru)/length(ru)
 	#au=.5sum(ru)/length(ru)
-	au=.5sum(conj.(jx).*exb+conj.(jy).*eyb+conj.(jz).*ezb)
+	au=1im*.5sum(conj.(jx).*exb+conj.(jy).*eyb+conj.(jz).*ezb)#the 1im factor is to denormalize j
 	return au
 end
