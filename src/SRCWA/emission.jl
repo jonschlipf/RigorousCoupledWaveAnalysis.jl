@@ -1,8 +1,8 @@
-function pointDipole(grd,px0,py0,pz0)
+function pointDipole(grd,jx0,jy0,jz0)
 	fc=(2pi/grd.k0)^2/grd.px/grd.py#prefactor from fourier transform
-	jx=1im*ones(length(grd.nx))*px0*sqrt(fc)#this is the normalized j, not the normalized one
-	jy=1im*ones(length(grd.nx))*py0*sqrt(fc)
-	jz=1im*ones(length(grd.nx))*pz0*sqrt(fc)
+	jx=ones(length(grd.nx))*jx0*sqrt(fc)#this is the normalized j, not the normalized one
+	jy=ones(length(grd.nx))*jy0*sqrt(fc)
+	jz=ones(length(grd.nx))*jz0*sqrt(fc)
 	return jx,jy,jz
 end
 function innerSource(grd,jx,jy,jz,Sin,Sout,eps)
