@@ -11,19 +11,19 @@ struct ConstantPerm <: Isotropic
     ε::Complex{Float64}
 end
 function get_permittivity(mat::ConstantPerm,λ,index=1)
-    return Complex(mat.ε)
+    return Complex(mat.ε)*(index%2)
 end
 struct ModelPerm<: Isotropic
     f::Function
 end
 function get_permittivity(mat::ModelPerm,λ,index=1)
-    return Complex(mat.f(λ))
+    return Complex(mat.f(λ))*(index%2)
 end
 struct InterpolPerm <: Isotropic
     ε
 end
 function get_permittivity(mat::InterpolPerm,λ,index=1)
-    return Complex(mat.ε(λ))
+    return Complex(mat.ε(λ))*(index%2)
 end
 struct InterpolPermA<: Anisotropic
     ε
