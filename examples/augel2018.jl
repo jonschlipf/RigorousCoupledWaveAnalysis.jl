@@ -12,7 +12,7 @@ air=ConstantPerm(1.0)
 etoh=ConstantPerm(1.353^2)
 al=ModelPerm(al_rakic)
 
-N=13
+N=5 #one needs much larger N here for accurate results
 wls=1100:5:1600
 p=950
 d=480
@@ -26,19 +26,19 @@ mdl=RCWAModel([nha,spa,nsi,nge,ige],etoh,si)
 
 A=zeros(size(wls))
 
-#for i=1:1#length(wls)
-i=1
+for i=1:1#length(wls)
+
     λ=wls[i] #get wavelength from array
     grd=rcwagrid(mdl,N,N,λ,1E-5,0,p,p)
     ate,atm=scatterSource(grd.kin,N,N)
-    @time mtr=scatMatrices(mdl,grd,λ)
-    @time a,b=srcwa_amplitudes(ate,grd,mtr)
-    @time flw=srcwa_abs(a,b,grd::RcwaGrid)
+    mtr=scatMatrices(mdl,grd,λ)
+    a,b=srcwa_amplitudes(ate,grd,mtr)
+    flw=srcwa_abs(a,b,grd::RcwaGrid)
 #    @time R,T=srcwa_reftra(ate,mdl,grd,λ)
     R=1-flw[1]
     T=flw[end]
-    println(flw)
-    println(R)
-    println(T)
+    #println(flw)
+    #println(R)
+    #println(T)
     A[i]=flw[end-1]-flw[end]
-#end
+end
