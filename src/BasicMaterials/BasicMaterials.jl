@@ -2,10 +2,10 @@ module BasicMaterials
 
 export ge_nunley,si_schinke,sio2_malitson,zno_bond,al_rakic
 
-using CSV,Interpolations
+using CSV,Interpolations,DataFrames
 include("rakic.jl")
 
-ge_nunley_raw=Matrix(CSV.read(string(@__DIR__,"/ge_nunley.txt"),delim=" "))
+ge_nunley_raw=Matrix(CSV.read(string(@__DIR__,"/ge_nunley.txt"),DataFrame,delim=" "))
 ge_nunley_n=cat(ge_nunley_raw[:,1],ge_nunley_raw[:,2]+1im*ge_nunley_raw[:,3],dims=2)
 ge_nunley=extrapolate(interpolate((1000ge_nunley_raw[:,1],),ge_nunley_n[:,2].^2,Gridded(Linear())),Flat())
 
@@ -18,7 +18,7 @@ zno_bond_n(l)=sqrt(2.81418+0.87968l^2 /(l^2-0.3042^2)-0.00711.*l.^2)
 zno_bond(l)=zno_bond_n(.001l)^2 .+0im
 #W. L. Bond. Measurement of the refractive indices of several crystals, J. Appl. Phys. 36, 1674-1677 (1965)
 
-si_schinke_raw=Matrix(CSV.read(string(@__DIR__,"/si_schinke.txt"),delim=" "))
+si_schinke_raw=Matrix(CSV.read(string(@__DIR__,"/si_schinke.txt"),DataFrame,delim=" "))
 si_schinke_n=cat(si_schinke_raw[:,1],si_schinke_raw[:,2]+1im*si_schinke_raw[:,3],dims=2)
 si_schinke=extrapolate(interpolate((1000si_schinke_raw[:,1],),si_schinke_n[:,2].^2,Gridded(Linear())),Flat())
 #C. Schinke, P. C. Peest, J. Schmidt, R. Brendel, K. Bothe, M. R. Vogt, I. Kröger, S. Winter, A. Schirmacher, S. Lim, H. T. Nguyen, D. MacDonald. Uncertainty analysis for the coefficient of band-to-band absorption of crystalline silicon. AIP Advances 5, 67168 (2015)
