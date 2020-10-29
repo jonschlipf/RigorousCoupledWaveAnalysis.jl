@@ -50,7 +50,8 @@ function srcwa_amplitudes(a0,grd::RcwaGrid,mtr::Array{ScatterMatrix,1})
         Sbefore=concatenate(mtr[1:ct])
         Safter=concatenate(mtr[ct+1:end])
         a[:,ct]=(I-Sbefore.S22*Safter.S11)\(Sbefore.S21*a0)
-        b[:,ct]=(I-Safter.S11*Sbefore.S22)\(Safter.S11*Sbefore.S21*a0)
+        b[:,ct]=Safter.S11*a[:,ct]
+        #b[:,ct]=(I-Safter.S11*Sbefore.S22)\(Safter.S11*Sbefore.S21*a0)
     end
     return a,b
 end
