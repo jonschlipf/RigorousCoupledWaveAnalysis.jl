@@ -12,7 +12,7 @@ air=ConstantPerm(1.0)
 etoh=ConstantPerm(1.353^2)
 al=ModelPerm(al_rakic)
 
-N=5 #one needs much larger N here for accurate results
+N=3 #one needs much larger N here for accurate results
 wls=1100:5:1600
 p=950
 d=480
@@ -25,6 +25,8 @@ ige=SimpleLayer(480,ge)
 mdl=RCWAModel([nha,spa,nsi,nge,ige],etoh,si)
 
 A=zeros(size(wls))
+R=zeros(size(wls))
+T=zeros(size(wls))
 
 for i=1:length(wls)
 
@@ -35,8 +37,8 @@ for i=1:length(wls)
     a,b=srcwa_amplitudes(ate,grd,mtr)
     flw=srcwa_abs(a,b,grd::RcwaGrid)
 #    @time R,T=srcwa_reftra(ate,mdl,grd,λ)
-    R=1-flw[1]
-    T=flw[end]
+    R[i]=1-flw[1]
+    T[i]=flw[end]
     #println(flw)
     #println(R)
     #println(T)
