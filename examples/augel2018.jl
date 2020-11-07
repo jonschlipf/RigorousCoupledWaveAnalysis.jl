@@ -18,15 +18,15 @@ p=950
 d=480
 
 nha=PatternedLayer(100,[al,etoh],[Circle(d/p)])
-spa=PlainLayer(50,ox)
-nsi=PlainLayer(20,si)
-nge=PlainLayer(20,ge)
-ige=PlainLayer(480,ge)
+spa=SimpleLayer(50,ox)
+nsi=SimpleLayer(20,si)
+nge=SimpleLayer(20,ge)
+ige=SimpleLayer(480,ge)
 mdl=RCWAModel([nha,spa,nsi,nge,ige],etoh,si)
 
 A=zeros(size(wls))
 
-for i=1:1#length(wls)
+for i=1:length(wls)
 
     λ=wls[i] #get wavelength from array
     grd=rcwagrid(mdl,N,N,λ,1E-5,0,p,p)
