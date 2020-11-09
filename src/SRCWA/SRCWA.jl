@@ -45,15 +45,19 @@ function srcwa_reftra(a0,model::RCWAModel,grd::RcwaGrid,λ)
 end
 
 function srcwa_amplitudes(a0,grd::RcwaGrid,mtr::Array{ScatterMatrix,1})
-    a=zeros(length(a0),length(mtr)-1)*1im
-    b=zeros(length(a0),length(mtr)-1)*1im
-    for ct=1:size(a,2)
+    a=zeros(length(a0),length(mtr)+1)*1im
+    b=zeros(length(a0),length(mtr)+1)*1im
+    for ct=1:size(a,2)-2
         Sbefore=concatenate(mtr[1:ct])
         Safter=concatenate(mtr[ct+1:end])
-        a[:,ct]=(I-Sbefore.S22*Safter.S11)\(Sbefore.S21*a0)
-        b[:,ct]=Safter.S11*a[:,ct]
+        a[:,ct+1]=(I-Sbefore.S22*Safter.S11)\(Sbefore.S21*a0)
+        b[:,ct+1]=Safter.S11*a[:,ct]
         #b[:,ct]=(I-Safter.S11*Sbefore.S22)\(Safter.S11*Sbefore.S21*a0)
     end
+	Stot=concatenate(mtr)
+	a[:,1]=a0
+	a[:,end]=Stot.S21*a0
+	b[:,1]=Stot.S11*a0
     return a,b
 end
 
