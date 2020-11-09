@@ -38,8 +38,9 @@ function srcwa_reftra(a0,model::RCWAModel,grd::RcwaGrid,λ)
         S=concatenate(S,scattermatrix_layer(eigenmodes(grd.dnx,grd.dny,grd.Kx,grd.Ky,grd.k0,λ,model.layers[ct]),grd.V0))
     end
     S=concatenate(S,scattermatrix_tra(tra,grd.V0))
-    R=a2p(S.S11*a0,I,grd.Kx,grd.Ky,ref.Kz,grd.kin[3])
-    T=a2p(S.S21*a0,I,grd.Kx,grd.Ky,tra.Kz,grd.kin[3])
+	kzin=grd.kin[3]*real(sqrt(get_permittivity(mdl.εsup,λ)))
+    R=a2p(S.S11*a0,I,grd.Kx,grd.Ky,ref.Kz,kzin)
+    T=a2p(S.S21*a0,I,grd.Kx,grd.Ky,tra.Kz,kzin)
     return R,T
 end
 

@@ -27,6 +27,8 @@ mdl=RCWAModel([nha,spa,nsi,nge,ige],etoh,si)
 A=zeros(size(wls))
 R=zeros(size(wls))
 T=zeros(size(wls))
+R2=zeros(size(wls))
+T2=zeros(size(wls))
 
 for i=1:length(wls)
 
@@ -35,8 +37,8 @@ for i=1:length(wls)
     ate,atm=scatterSource(grd.kin,N,N)
     mtr=scatMatrices(mdl,grd,λ)
     a,b=srcwa_amplitudes(ate,grd,mtr)
-    flw=srcwa_abs(a,b,grd.V0,grd,kin[3]*1.353)
-#    @time R,T=srcwa_reftra(ate,mdl,grd,λ)
+    flw=srcwa_abs(a,b,grd.V0,grd.kin[3]*1.353)
+    R2[i],T2[i]=srcwa_reftra(ate,mdl,grd,λ)
     R[i]=1-flw[1]
     T[i]=flw[end]
     #println(flw)

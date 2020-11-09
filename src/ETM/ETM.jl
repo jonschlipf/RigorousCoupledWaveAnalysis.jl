@@ -6,7 +6,7 @@ export etmSource,etm_reftra
 function F(em)
     return [em.W em.W;-em.V em.V]
 end
-function  etm_reftra(ref,tra,em,s,grd)
+function  etm_reftra(ref,tra,em,s,grd,kzin)
     B=[I I*0;0*I I; 1im*grd.Kx*grd.Ky/tra.Kz 1im*(grd.Ky^2+tra.Kz^2)/tra.Kz;-1im*(grd.Kx^2+tra.Kz^2)/tra.Kz -1im*grd.Kx*grd.Ky/tra.Kz]
     #backward iteration
     a=Array{Array{Complex{Float64},2},1}(undef,length(em))
@@ -24,8 +24,8 @@ function  etm_reftra(ref,tra,em,s,grd)
         t[cnt+1]=a[cnt]\(em[cnt].X*t[cnt])
     end
     t=a[end]\em[end].X*t[end]
-    R=a2p(r,I,grd.Kx,grd.Ky,ref.Kz,grd.kin[3])
-    T=a2p(t,I,grd.Kx,grd.Ky,tra.Kz,grd.kin[3])
+    R=a2p(r,I,grd.Kx,grd.Ky,ref.Kz,kzin)
+    T=a2p(t,I,grd.Kx,grd.Ky,tra.Kz,kzin)
     return R,T
 end
 
@@ -33,7 +33,8 @@ function  etm_reftra(s,m::RCWAModel,grd::RcwaGrid,λ)
     ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
     tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
     ems=eigenmodes(grd,λ,m.layers)
-    R,T=etm_reftra(ref,tra,ems,s,grd)
+	kzin=grd.kin[3]*real(sqrt(get_permittivity(m.εsup,λ)))
+    R,T=etm_reftra(ref,tra,ems,s,grd,kzin)
     return R,T
 end
 
