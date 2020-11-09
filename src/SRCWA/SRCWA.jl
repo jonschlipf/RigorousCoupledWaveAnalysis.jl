@@ -44,7 +44,7 @@ function srcwa_reftra(a0,model::RCWAModel,grd::RcwaGrid,λ)
     return R,T
 end
 
-function srcwa_reftra(a0,εsup,εsub,S,grd::RCWAGrid,λ)
+function srcwa_reftra(a0,εsup,εsub,S,grd::RcwaGrid,λ)
 	ref=halfspace(grd.Kx,grd.Ky,εsup,λ)
     tra=halfspace(grd.Kx,grd.Ky,εsub,λ)
 	kzin=grd.k0[3]*real(sqrt(get_permittivity(εsup,λ)))
