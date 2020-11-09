@@ -41,8 +41,9 @@ Compute the eigenmodes of a layer
 * `Ky` : ky component of the wave vector in reciprocal space
 * `k0` : free space wavevector (for grid computation)
 """
-function eigenmodes(dnx,dny,Kx,Ky,k0,λ,l::PatternedLayer)
-    #get the base permittivity
+function eigenmodes(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
+    k0=2π/real(λ)
+	#get the base permittivity
     εxx=Kx*0+get_permittivity(l.materials[1],λ,1)*I
     if typeof(l.materials[1])<:Isotropic
         εzz=εyy=εxx
@@ -82,7 +83,8 @@ function eigenmodes(dnx,dny,Kx,Ky,k0,λ,l::PatternedLayer)
     #create struct
     return Eigenmodes(Matrix(V),Matrix(W),X,q)
 end
-function eigenmodes(dnx,dny,Kx,Ky,k0,λ,l::SimpleLayer)
+function eigenmodes(dnx,dny,Kx,Ky,λ,l::SimpleLayer)
+	k0=2π/real(λ)
     ε=0Kx+get_permittivity(l.material,λ)*I
     Kz=sqrt.(Complex.(ε-Kx*Kx-Ky*Ky))
     Q=[Kx*Ky ε-Kx*Kx;Ky*Ky-ε -Ky*Kx]
@@ -94,8 +96,9 @@ function eigenmodes(dnx,dny,Kx,Ky,k0,λ,l::SimpleLayer)
     X=exp(Matrix(q*k0*l.thickness))
     return Eigenmodes(Matrix(V),Matrix(W),X,q)
 end
-function eigenmodes(dnx,dny,Kx,Ky,k0,λ,l::AnisotropicLayer)
-    εxx=Kx*0+get_permittivity(l.material,λ,1)*I
+function eigenmodes(dnx,dny,Kx,Ky,λ,l::AnisotropicLayer)
+    k0=2π/real(λ)
+	εxx=Kx*0+get_permittivity(l.material,λ,1)*I
     if typeof(l.material)<:Isotropic
         εzz=εyy=εxx
         εxy=εyx=0εxx
@@ -123,7 +126,7 @@ function eigenmodes(dnx,dny,Kx,Ky,k0,λ,l::AnisotropicLayer)
     return Eigenmodes(Matrix(V),Matrix(W),X,q)
 end
 function eigenmodes(g::RcwaGrid,λ,l::Layer)
-    return eigenmodes(g.dnx,g.dny,g.Kx,g.Ky,g.k0,λ,l)
+    return eigenmodes(g.dnx,g.dny,g.Kx,g.Ky,λ,l)
 end
 function eigenmodes(g::RcwaGrid,λ,l::Array{Layer,1})
     #initialize array
@@ -196,7 +199,7 @@ end
 
 
 """
-    a2p(a,W,Kx,Ky,Kz,k0)
+    a2p(a,W,Kx,Ky,Kz,kz0)
 
 converts an amplitude vector (in substrate or superstrate) to power flow
 # Arguments

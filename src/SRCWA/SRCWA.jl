@@ -9,23 +9,23 @@ using ..Common
 include("scatterMatrices.jl")
 include("emission.jl")
 
-function scatterSource(kinc,Nx,Ny)
+function scatterSource(grd,nsup)
+	#incoming wave vector
+	kin=grd.k0*nsup
     #the total number of scattering states
-    width=(Nx*2+1)*(Ny*2+1)
+    width=(grd.Nx*2+1)*(grd.Ny*2+1)
     #vertical
     normal=[0,0,1]
     #te polarization E-field is perpendicular with z-axis and propagation direction (so, parallel with surface)
-    kte=cross(normal,kinc)/norm(cross(normal,kinc))
+    kte=cross(normal,kin)/norm(cross(normal,kin))
     #tm polarization E-field is perpendicular with te and propagation direction (so, not necessarily parallel with surface)
-    ktm=cross(kinc,kte)/norm(cross(kinc,kte))
+    ktm=cross(kin,kte)/norm(cross(kin,kte))
     a0te=zeros(width*2)*1im
     a0te[convert(Int64,(width+1)/2)]=kte[1]
     a0te[convert(Int64,(width+1)/2)+width]=kte[2]
-
     a0tm=zeros(width*2)*1im
     a0tm[convert(Int64,(width+1)/2)]=ktm[1]
     a0tm[convert(Int64,(width+1)/2)+width]=ktm[2]
-
     return a0te,a0tm
 end
 
@@ -35,10 +35,10 @@ function srcwa_reftra(a0,model::RCWAModel,grd::RcwaGrid,λ)
     tra=halfspace(grd.Kx,grd.Ky,model.εsub,λ)
     S=scattermatrix_ref(ref,grd.V0)
     for ct=1:length(model.layers)
-        S=concatenate(S,scattermatrix_layer(eigenmodes(grd.dnx,grd.dny,grd.Kx,grd.Ky,grd.k0,λ,model.layers[ct]),grd.V0))
+        S=concatenate(S,scattermatrix_layer(eigenmodes(grd.dnx,grd.dny,grd.Kx,grd.Ky,λ,model.layers[ct]),grd.V0))
     end
     S=concatenate(S,scattermatrix_tra(tra,grd.V0))
-	kzin=grd.kin[3]*real(sqrt(get_permittivity(mdl.εsup,λ)))
+	kzin=grd.k0[3]*real(sqrt(get_permittivity(model.εsup,λ)))
     R=a2p(S.S11*a0,I,grd.Kx,grd.Ky,ref.Kz,kzin)
     T=a2p(S.S21*a0,I,grd.Kx,grd.Ky,tra.Kz,kzin)
     return R,T

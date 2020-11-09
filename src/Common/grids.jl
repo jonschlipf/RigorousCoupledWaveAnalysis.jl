@@ -11,16 +11,17 @@ end
 struct RcwaGrid
     dnx::Array{Float64,2}
     dny::Array{Float64,2}
-    k0::Float64
     Kx::Array{Complex{Float64},2}
     Ky::Array{Complex{Float64},2}
-    kin::Array{Float64,1}
+    k0::Array{Float64,1}
     V0::Array{Complex{Float64},2}
     Kz0::Array{Complex{Float64},2}
     nx::Array{Float64,1}
     ny::Array{Float64,1}
     px::Float64
     py::Float64
+	Nx::Int64
+	Ny::Int64
 end
 
 function ngrid(Nx,Ny)
@@ -35,19 +36,19 @@ function ngrid(Nx,Ny)
     return nx,ny,dnx,dny
 end
 
-function kgrid(nx,ny,θ,α,λ,ax,ay,epsilon_ref)
+function kgrid(nx,ny,θ,α,λ,ax,ay)
     #straightforward
     #all k vectors are generally normalized to k0 here
-    k0=2*π/real(λ)
-    #The incoming wave, transformed from spherical coordinates to normalized cartesian coordinates, |kin|=1
-    kin=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]*1#real(sqrt(epsilon_ref))
+    kfs=2*π/real(λ)
+    #The incoming wave, transformed from spherical coordinates to normalized cartesian coordinates, |k0|=1
+    k0=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]*1
     #the spatial vectors are the sum of the incoming vector and the reciprocal lattice vectors
-    kx=kin[1].+(2*π/ax)*nx/k0;
-    ky=kin[2].+(2*π/ay)*ny/k0;
+    kx=k0[1].+real(λ)*nx/ax;
+    ky=k0[2].+real(λ)*ny/ay;
     #need matrix for later computations
     Kx=Diagonal(kx)
     Ky=Diagonal(ky)
-    return k0,Kx,Ky,kin
+    return Kx,Ky,k0
 end
 
 function meshgrid(acc)
@@ -57,11 +58,11 @@ function meshgrid(acc)
     return Meshgrid(x,y)
 end
 
-function rcwagrid(model::RCWAModel,Nx,Ny,λ,θ,α,ax,ay)
+function rcwagrid(Nx,Ny,λ,θ,α,ax,ay)
     nx,ny,dnx,dny=ngrid(Nx,Ny)
-    k0,Kx,Ky,kin=kgrid(nx,ny,θ,α,λ,ax,ay,get_permittivity(model.εsub,λ))
+    Kx,Ky,k0=kgrid(nx,ny,θ,α,λ,ax,ay)
     V0,Kz0=modes_freespace(Kx,Ky)
-    return RcwaGrid(dnx,dny,k0,Kx,Ky,kin,V0,Kz0,nx,ny,ax,ay)
+    return RcwaGrid(dnx,dny,Kx,Ky,k0,V0,Kz0,nx,ny,ax,ay,Nx,Ny)
 end
 
 """

@@ -33,30 +33,31 @@ function  etm_reftra(s,m::RCWAModel,grd::RcwaGrid,λ)
     ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
     tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
     ems=eigenmodes(grd,λ,m.layers)
-	kzin=grd.kin[3]*real(sqrt(get_permittivity(m.εsup,λ)))
+	kzin=grd.k0[3]*real(sqrt(get_permittivity(m.εsup,λ)))
     R,T=etm_reftra(ref,tra,ems,s,grd,kzin)
     return R,T
 end
 
-function etmSource(kinc,Nx,Ny)
-    width=(Nx*2+1)*(Ny*2+1)
+function etmSource(grd,nsup)
+	kin=grd.k0*nsup
+    width=(grd.Nx*2+1)*(grd.Ny*2+1)
     #vertical
     normal=[0,0,1]
     #te polarization E-field is perpendicular with z-axis and propagation direction (so, parallel with surface)
-    kte=cross(normal,kinc)/norm(cross(normal,kinc))
+    kte=cross(normal,kin)/norm(cross(normal,kin))
     #tm polarization E-field is perpendicular with te and propagation direction (so, not necessarily parallel with surface)
-    ktm=cross(kinc,kte)/norm(cross(kinc,kte))
+    ktm=cross(kin,kte)/norm(cross(kin,kte))
     esource=zeros(width*4)*1im
     esource[convert(Int64,(width+1)/2)]=kte[1]
     esource[convert(Int64,(width+1)/2)+width]=kte[2]
-    esource[convert(Int64,(width+1)/2)+2*width]=(kte[2]*kinc[3]-kte[3]*kinc[2])*1im
-    esource[convert(Int64,(width+1)/2)+3*width]=(kte[3]*kinc[1]-kte[1]*kinc[3])*1im
+    esource[convert(Int64,(width+1)/2)+2*width]=(kte[2]*kin[3]-kte[3]*kin[2])*1im
+    esource[convert(Int64,(width+1)/2)+3*width]=(kte[3]*kin[1]-kte[1]*kin[3])*1im
     ste=esource
     esource=zeros(width*4)*1im
     esource[convert(Int64,(width+1)/2)]=ktm[1]
     esource[convert(Int64,(width+1)/2)+width]=ktm[2]
-    esource[convert(Int64,(width+1)/2)+2*width]=(ktm[2]*kinc[3]-ktm[3]*kinc[2])*1im
-    esource[convert(Int64,(width+1)/2)+3*width]=(ktm[3]*kinc[1]-ktm[1]*kinc[3])*1im
+    esource[convert(Int64,(width+1)/2)+2*width]=(ktm[2]*kin[3]-ktm[3]*kin[2])*1im
+    esource[convert(Int64,(width+1)/2)+3*width]=(ktm[3]*kin[1]-ktm[1]*kin[3])*1im
     stm=esource#/sqrt(epsref)
     return ste,stm
 end

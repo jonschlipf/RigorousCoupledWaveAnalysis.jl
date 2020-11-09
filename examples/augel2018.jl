@@ -29,18 +29,23 @@ R=zeros(size(wls))
 T=zeros(size(wls))
 R2=zeros(size(wls))
 T2=zeros(size(wls))
-
+R3=zeros(size(wls))
+T3=zeros(size(wls))
+nsup=1.353
 for i=1:length(wls)
 
     λ=wls[i] #get wavelength from array
-    grd=rcwagrid(mdl,N,N,λ,1E-5,0,p,p)
-    ate,atm=scatterSource(grd.kin,N,N)
+    grd=rcwagrid(N,N,λ,1E-5,0,p,p)
+    ate,atm=scatterSource(grd,nsup)
     mtr=scatMatrices(mdl,grd,λ)
     a,b=srcwa_amplitudes(ate,grd,mtr)
-    flw=srcwa_abs(a,b,grd.V0,grd.kin[3]*1.353)
+    flw=srcwa_abs(a,b,grd.V0,grd.k0[3]*1.353)
     R2[i],T2[i]=srcwa_reftra(ate,mdl,grd,λ)
     R[i]=1-flw[1]
     T[i]=flw[end]
+	ste,stm=etmSource(grd,nsup)
+	R3[i],T3[i]=etm_reftra(ste,mdl,grd,λ)
+	
     #println(flw)
     #println(R)
     #println(T)
