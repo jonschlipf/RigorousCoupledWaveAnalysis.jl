@@ -40,7 +40,7 @@ function kgrid(nx,ny,θ,α,λ,ax,ay,epsilon_ref)
     #all k vectors are generally normalized to k0 here
     k0=2*π/real(λ)
     #The incoming wave, transformed from spherical coordinates to normalized cartesian coordinates, |kin|=1
-    kin=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]*real(sqrt(epsilon_ref))
+    kin=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]*1#real(sqrt(epsilon_ref))
     #the spatial vectors are the sum of the incoming vector and the reciprocal lattice vectors
     kx=kin[1].+(2*π/ax)*nx/k0;
     ky=kin[2].+(2*π/ay)*ny/k0;
