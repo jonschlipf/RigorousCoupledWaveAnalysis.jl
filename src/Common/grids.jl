@@ -1,89 +1,130 @@
 
 using LinearAlgebra
+ftype=Float64
+export ngrid,kgrid,rcwagrid,modes_freespace,RcwaGrid
+"""
+    RcwaGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
 
-export Meshgrid,ngrid,kgrid,meshgrid,Rcwagrid,rcwagrid,modes_freespace,grid,RcwaGrid
-
-struct Meshgrid
-    x::Array{Float64,2}
-    y::Array{Float64,2}
-end
-
+Structure to store a grid for RCWA computation
+# Attributes
+* `Nx` : Maximum order in x
+* `Ny` : Maximum order in y
+* `nx` : Order in x
+* `ny` : Order in y
+* `dnx` : Differential order in x
+* `dny` : Differential order in y
+* `px` : Structure pitch in x
+* `py` : Structure pitch in y
+* `Kx` : Wave vector in x
+* `Ky` : Wave vector in y
+* `k0` : Free-space 0th-order wavevector
+* `V0` : Magnetic eigenstate of free space
+* `Kz0` : Wave vector in y, free space
+"""
 struct RcwaGrid
-    dnx::Array{Float64,2}
-    dny::Array{Float64,2}
-    Kx::Array{Complex{Float64},2}
-    Ky::Array{Complex{Float64},2}
-    k0::Array{Float64,1}
-    V0::Array{Complex{Float64},2}
-    Kz0::Array{Complex{Float64},2}
-    nx::Array{Float64,1}
-    ny::Array{Float64,1}
-    px::Float64
-    py::Float64
 	Nx::Int64
 	Ny::Int64
+    nx::Array{Int64,1}
+    ny::Array{Int64,1}
+    dnx::Array{Int64,2}
+    dny::Array{Int64,2}
+    px::ftype
+    py::ftype
+    Kx::Diagonal{Complex{ftype},Array{Complex{ftype},1}}
+    Ky::Diagonal{Complex{ftype},Array{Complex{ftype},1}}
+    k0::Array{ftype,1}
+    V0::AbstractArray{Complex{ftype},2}
+    Kz0::Diagonal{Complex{ftype},Array{Complex{ftype},1}}
 end
-
-function ngrid(Nx,Ny)
+"""
+	ngrid(Nx,Ny)
+Computes the orders n of the plane wave expansion
+# Arguments
+* `Nx` : Maximum order in x
+* `Ny` : Maximum order in y
+# Outputs
+* `nx` : Order in x
+* `ny` : Order in y
+* `dnx` : Differential order in x
+* `dny` : Differential order in y
+"""
+function ngrid(Nx::Int64,Ny::Int64)
     #reciprocal space coordinate indices
-    ny=[c  for r in -Nx:Nx, c in -Ny:Ny]
-    nx=[r  for r in -Nx:Nx, c in -Ny:Ny]
-    nx=vec(nx)
-    ny=vec(ny)
+    nx=vec([r  for r in -Nx:Nx, c in -Ny:Ny])
+    ny=vec([c  for r in -Nx:Nx, c in -Ny:Ny])
     #difference matrix for 2dft
     dnx=[nx[a]-nx[b] for a in 1:length(nx),b in 1:length(nx)]
     dny=[ny[a]-ny[b] for a in 1:length(ny),b in 1:length(ny)]
     return nx,ny,dnx,dny
 end
-
-function kgrid(nx,ny,θ,α,λ,ax,ay)
-    #straightforward
+"""
+    kgrid(nx,ny,px,py,θ,α,λ)
+Computes the wave vectors of the plane wave expansion
+# Arguments
+* `nx` : Order in x
+* `ny` : Order in y
+* `px` : Structure pitch in x
+* `py` : Structure pitch in y
+* `θ` : inclination angle of incoming wave
+* `α` : azimuth angle of incoming wave
+* `λ` : wavelength
+# Outputs
+* `Kx` : Wave vector in x
+* `Ky` : Wave vector in y
+* `k0` : Free-space 0th-order wavevector
+"""
+function kgrid(nx::Array{Int64,1},ny::Array{Int64,1},px::Real,py::Real,θ::Real,α::Real,λ::Real)
     #all k vectors are generally normalized to k0 here
-    kfs=2*π/real(λ)
     #The incoming wave, transformed from spherical coordinates to normalized cartesian coordinates, |k0|=1
-    k0=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]*1
+    k0=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]
     #the spatial vectors are the sum of the incoming vector and the reciprocal lattice vectors
-    kx=k0[1].+real(λ)*nx/ax;
-    ky=k0[2].+real(λ)*ny/ay;
+    kx=k0[1].+real(λ)*nx/px;
+    ky=k0[2].+real(λ)*ny/py;
     #need matrix for later computations
     Kx=Diagonal(kx)
     Ky=Diagonal(ky)
-    return Kx,Ky,k0
+    return Complex.(Kx),Complex.(Ky),k0
 end
-
-function meshgrid(acc)
-    #creating a square meshgrid
-    x=[r  for r in -acc/2+.5:acc/2-.5, c in -acc/2+.5:acc/2-.5]/acc
-    y=[c  for r in -acc/2+.5:acc/2-.5, c in -acc/2+.5:acc/2-.5]/acc
-    return Meshgrid(x,y)
-end
-
-function rcwagrid(Nx,Ny,λ,θ,α,ax,ay)
-    nx,ny,dnx,dny=ngrid(Nx,Ny)
-    Kx,Ky,k0=kgrid(nx,ny,θ,α,λ,ax,ay)
-    V0,Kz0=modes_freespace(Kx,Ky)
-    return RcwaGrid(dnx,dny,Kx,Ky,k0,V0,Kz0,nx,ny,ax,ay,Nx,Ny)
-end
-
 """
     modes_freespace(Kx,Ky)
-    Computes the eigenmodes of propagation through free space, for normalization
-    Kx: x-axis component of the propagation vector
-    Ky: y-axis component of the propagation vector
-    returns
-    V0: coordinate transform between free space eigenmode amplitude and magnetic field
-    Kz0: z-axis component of the propagation vector in free space
+Computes the eigenmodes of propagation through free space, for normalization
+#Arguments
+*`Kx`: x-axis component of the propagation vector
+*`Ky`: y-axis component of the propagation vector
+#Outputs
+*`V0`: coordinate transform between free space eigenmode amplitude and magnetic field
+*`Kz0`: z-axis component of the propagation vector in free space
 """
-function modes_freespace(Kx,Ky)
+function modes_freespace(Kx::Diagonal{Complex{ftype},Array{Complex{ftype},1}},Ky::Diagonal{Complex{ftype},Array{Complex{ftype},1}})
     #just because |k|=1
     Kz0=sqrt.(Complex.(I-Kx*Kx-Ky*Ky))
     #P0 is identity
     Q0=[Kx*Ky I-Kx*Kx;Ky*Ky-I -Ky*Kx]
     #propagation
-    q0=1im*Kz0
-    q0=[q0 q0*0;0*q0 q0]
+    q0=Diagonal(Matrix([1im*Kz0 0I;0I 1im*Kz0]))
     #Free space, so W is identity
-    #W0=I+0*Q0
-    V0=Q0/Diagonal(q0)
+    V0=Q0/q0
     return V0,Kz0
 end
+"""
+	rcwagrid(Nx,Ny,px,py,θ,α,λ)
+Computes the eigenmodes of propagation through free space, for normalization
+#Arguments
+* `nx` : Maximum order in x
+* `ny` : Maximum order in y
+* `px` : Structure pitch in x
+* `py` : Structure pitch in y
+* `θ` : inclination angle of incoming wave
+* `α` : azimuth angle of incoming wave
+* `λ` : wavelength
+#Outputs
+*`grd`: RCWA grid struct
+"""
+
+function rcwagrid(Nx::Int64,Ny::Int64,px::Real,py::Real,θ::Real,α::Real,λ::Real)
+    nx,ny,dnx,dny=ngrid(Nx,Ny)
+    Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ)
+    V0,Kz0=modes_freespace(Kx,Ky)
+	return RcwaGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
+end
+
