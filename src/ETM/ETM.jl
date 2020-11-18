@@ -4,7 +4,7 @@ using LinearAlgebra
 using ..Common
 export etmSource,etm_reftra
 function F(em)
-    return [em.W em.W;-em.V em.V]
+    return Matrix([em.W em.W;-em.V em.V])
 end
 function  etm_reftra(ref,tra,em,s,grd,kzin)
     B=[I I*0;0*I I; 1im*grd.Kx*grd.Ky/tra.Kz 1im*(grd.Ky^2+tra.Kz^2)/tra.Kz;-1im*(grd.Kx^2+tra.Kz^2)/tra.Kz -1im*grd.Kx*grd.Ky/tra.Kz]
