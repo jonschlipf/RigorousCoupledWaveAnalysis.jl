@@ -107,7 +107,7 @@ function eigenmodes(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
     #V is transform between amplitude vector and H-Field
     V=Q*W/Diagonal(q)
     #X the factor applied to the amplitudes when propagatin through the layer
-    X=exp(Matrix(q*k0*l.thickness))
+    X=exp(Diagonal(q*k0*l.thickness))
     #create struct
     return Eigenmodes(V,W,X,q)
 end
@@ -125,7 +125,7 @@ function eigenmodes(dnx,dny,Kx,Ky,λ,l::SimpleLayer)
     #W is identity
     W=I+0*V
 	#amplitude propagation
-    X=exp(Matrix(q*k0*l.thickness))
+    X=exp(Diagonal(q*k0*l.thickness))
     return Eigenmodes(V,W,X,q)
 end
 function eigenmodes(dnx,dny,Kx,Ky,λ,l::AnisotropicLayer)
@@ -156,7 +156,7 @@ function eigenmodes(dnx,dny,Kx,Ky,λ,l::AnisotropicLayer)
     #V is transform between amplitude vector and H-Field
     V=Q*W/Diagonal(q)
     #X the factor applied to the amplitudes when propagatin through the layer
-    X=exp(Matrix(q*k0*l.thickness))
+    X=exp(Diagonal(q*k0*l.thickness))
     #create struct
     return Eigenmodes(V,W,X,q)
 end
