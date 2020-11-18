@@ -5,12 +5,12 @@ Lion Augel, Yuma Kawaguchi, Stefan Bechler, Roman Körner, Jörg Schulze, Hirona
 ACS Photonics 2018, 5, 11, 4586-4593 (2018)
 =#
 using RCWA
-si=InterpolPerm(si_schinke)
-ge=InterpolPerm(ge_nunley) #Ge from interpolated measured values
-ox=ModelPerm(sio2_malitson) #SiO2 from dispersion formula
+si=InterpolPerm(RCWA.si_schinke)
+ge=InterpolPerm(RCWA.ge_nunley) #Ge from interpolated measured values
+ox=ModelPerm(RCWA.sio2_malitson) #SiO2 from dispersion formula
 air=ConstantPerm(1.0)
 etoh=ConstantPerm(1.353^2)
-al=ModelPerm(al_rakic)
+al=ModelPerm(RCWA.al_rakic)
 
 N=4 #one needs much larger N here for accurate results
 wls=1100:5:1600
@@ -24,7 +24,7 @@ nge=SimpleLayer(20,ge)
 ige=SimpleLayer(480,ge)
 mdl=RCWAModel([nha,spa,nsi,nge,ige],etoh,si)
 
-nmax=3
+nmax=4
 
 A=zeros(length(wls),nmax+1)
 R=zeros(length(wls),nmax+1)

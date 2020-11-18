@@ -8,8 +8,8 @@ Opt. Express 26, 6067-6078 (2018)
 using RCWA
 
 #required materials
-ge=InterpolPerm(ge_nunley) #Ge from interpolated measured values
-ox=ModelPerm(sio2_malitson) #SiO2 from dispersion formula
+ge=InterpolPerm(RCWA.ge_nunley) #Ge from interpolated measured values
+ox=ModelPerm(RCWA.sio2_malitson) #SiO2 from dispersion formula
 air=ConstantPerm(1.0) #superstrate material is air
 
 #parameters of structure and kgrid
@@ -38,8 +38,8 @@ Rlf=zeros(length(wls)) #Forward lcp reflectivity
 Tlf=zeros(length(wls)) #Forward lcp transmissivity
 for i=1:length(wls) #iterate over all wavelengths
     λ=wls[i] #get wavelength from array
-    grd=rcwagrid(mdl,N,N,λ,1E-5,0,a,a) #build a reciprocal space grid
-    ste,stm=etmSource(grd.kin,N,N) #define source
+    grd=rcwagrid(N,N,a,a,1E-5,0,λ) #build a reciprocal space grid
+    ste,stm=etmSource(grd,1) #define source
     Rlf[i],Tlf[i]=etm_reftra(sqrt(.5)*(stm+1im*ste),mdl,grd,λ) #lcp propagation
     Rrf[i],Trf[i]=etm_reftra(sqrt(.5)*(1im*stm+ste),mdl,grd,λ) #rcp propagation
 end
@@ -62,8 +62,8 @@ Tlb=zeros(length(wls))#Backward lcp transmissivity
 for i=1:length(wls)
     λ=wls[i]
     println(λ)
-    grd=rcwagrid(mdl,N,N,λ,1E-5,0,a,a)
-    ste,stm=etmSource(grd.kin,N,N)
+    grd=rcwagrid(N,N,a,a,1E-5,0,λ)
+    ste,stm=etmSource(grd,1)
     Rlb[i],Tlb[i]=etm_reftra(sqrt(.5)*(stm+1im*ste),mdl,grd,λ)
     Rrb[i],Trb[i]=etm_reftra(sqrt(.5)*(1im*stm+ste),mdl,grd,λ)
 end
