@@ -44,7 +44,7 @@ function scattermatrix_layer(e::Eigenmodes,V0)
     Ai=I/A
     common=(A-e.X*B*Ai*e.X*B)\I
     S11=S22=common*(e.X*B*Ai*e.X*A-B)
-    S12=S21=common*(A-e.X*B*Ai*e.X*B)\e.X*(A-B*Ai*B)
+    S12=S21=common*e.X*(A-B*Ai*B)
     return ScatterMatrix(S11,S12,S21,S22)
 end
 
