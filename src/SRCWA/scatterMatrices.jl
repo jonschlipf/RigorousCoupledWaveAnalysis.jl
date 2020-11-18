@@ -39,11 +39,12 @@ function scattermatrix_tra(t::Halfspace,V0)
     return ScatterMatrix(S11,S12,S21,S22)
 end
 function scattermatrix_layer(e::Eigenmodes,V0)
-    A=Matrix(e.W)\I+(Matrix(e.V)\I)*V0
-    B=Matrix(e.W)\I-(Matrix(e.V)\I)*V0
+    A=e.W\I+e.V\V0
+    B=e.W\I-e.V\V0
     Ai=I/A
-    S11=S22=(A-e.X*B*Ai*e.X*B)\(e.X*B*Ai*e.X*A-B)
-    S12=S21=(A-e.X*B*Ai*e.X*B)\e.X*(A-B*Ai*B)
+    common=(A-e.X*B*Ai*e.X*B)\I
+    S11=S22=common*(e.X*B*Ai*e.X*A-B)
+    S12=S21=common*(A-e.X*B*Ai*e.X*B)\e.X*(A-B*Ai*B)
     return ScatterMatrix(S11,S12,S21,S22)
 end
 
