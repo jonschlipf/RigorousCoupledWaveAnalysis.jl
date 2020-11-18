@@ -59,32 +59,46 @@ function eigenmodes(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
 	#get the base permittivity
     εxx=get_permittivity(l.materials[1],λ,1)*I
     if typeof(l.materials[1])<:Isotropic
+    else
+    end
+    #add the permittivity for all inclusions
+	if minimum([typeof(m)<:Isotropic for m in l.materials])
+		εxx=get_permittivity(l.materials[1],λ)*I
+	    for ct=1:length(l.geometries)
+    	    rec=reciprocal(l.geometries[ct],dnx,dny)
+        	εxx+=rec*(get_permittivity(l.materials[ct+1],λ)-get_permittivity(l.materials[ct],λ))
+		end
         εzz=εyy=εxx
         εxy=εyx=0I
-    else
+	else
+		εxx=get_permittivity(l.materials[1],λ,1)*I
         εxy=get_permittivity(l.materials[1],λ,2)*I
         εyx=get_permittivity(l.materials[1],λ,3)*I
         εyy=get_permittivity(l.materials[1],λ,4)*I
         εzz=get_permittivity(l.materials[1],λ,5)*I
-    end
-    #add the permittivity for all inclusions
-    for ct=1:length(l.geometries)
-        rec=reciprocal(l.geometries[ct],dnx,dny)
-        εxx+=rec*(get_permittivity(l.materials[ct+1],λ,1)-get_permittivity(l.materials[ct],λ,1))
-        εxy+=rec*(get_permittivity(l.materials[ct+1],λ,2)-get_permittivity(l.materials[ct],λ,2))
-        εyx+=rec*(get_permittivity(l.materials[ct+1],λ,3)-get_permittivity(l.materials[ct],λ,3))
-        εyy+=rec*(get_permittivity(l.materials[ct+1],λ,4)-get_permittivity(l.materials[ct],λ,4))
-        εzz+=rec*(get_permittivity(l.materials[ct+1],λ,5)-get_permittivity(l.materials[ct],λ,5))
-    end
+	    for ct=1:length(l.geometries)
+    	    rec=reciprocal(l.geometries[ct],dnx,dny)
+        	εxx+=rec*(get_permittivity(l.materials[ct+1],λ,1)-get_permittivity(l.materials[ct],λ,1))
+			εxy+=rec*(get_permittivity(l.materials[ct+1],λ,2)-get_permittivity(l.materials[ct],λ,2))
+        	εyx+=rec*(get_permittivity(l.materials[ct+1],λ,3)-get_permittivity(l.materials[ct],λ,3))
+        	εyy+=rec*(get_permittivity(l.materials[ct+1],λ,4)-get_permittivity(l.materials[ct],λ,4))
+			εzz+=rec*(get_permittivity(l.materials[ct+1],λ,5)-get_permittivity(l.materials[ct],λ,5))
+    	end
+	end	 	
     #reciprocal of permittivity
     η=I/εzz
     # η=I/εxx
     #Maxwell equations transformed
-    P=[Kx*η*Ky I-Kx*η*Kx;Ky*η*Ky-I -Ky*η*Kx]
+    #this is old code
+	#P=[Kx*η*Ky I-Kx*η*Kx;Ky*η*Ky-I -Ky*η*Kx]
     Q=[Kx*Ky+εyx εyy-Kx*Kx;Ky*Ky-εxx -εxy-Ky*Kx]
-    #Q=[Kx*Ky εxx-Kx*Kx;Ky*Ky-εxx -Ky*Kx]
-    #eigenmodes
-    ev=eigen(Matrix(P*Q))
+    #M=Matrix(P*Q)
+	#analytic multiplication can speed things up:
+	A=η*(Ky*εyx+Kx*εxx)
+	B=η*(Ky*εyy+Kx*εxy)
+	M=[Ky.^2-εxx+Kx*A -Ky*Kx-εxy+Kx*B;-Kx*Ky-εyx+Ky*A Kx.^2-εyy+Ky*B]
+	#eigenmodes
+    ev=eigen(M)
     q=Diagonal(sqrt.(Complex.(ev.values)))
 	#select negative root
     q[real.(q).>0].*=-1
@@ -93,9 +107,9 @@ function eigenmodes(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
     #V is transform between amplitude vector and H-Field
     V=Q*W/Diagonal(q)
     #X the factor applied to the amplitudes when propagatin through the layer
-    X=exp(q*k0*l.thickness)
+    X=exp(Matrix(q*k0*l.thickness))
     #create struct
-    return Eigenmodes(Matrix(V),Matrix(W),X,q)
+    return Eigenmodes(V,W,X,q)
 end
 function eigenmodes(dnx,dny,Kx,Ky,λ,l::SimpleLayer)
 	k0=2π/real(λ)
@@ -112,7 +126,7 @@ function eigenmodes(dnx,dny,Kx,Ky,λ,l::SimpleLayer)
     W=I+0*V
 	#amplitude propagation
     X=exp(Matrix(q*k0*l.thickness))
-    return Eigenmodes(Matrix(V),Matrix(W),X,q)
+    return Eigenmodes(V,W,X,q)
 end
 function eigenmodes(dnx,dny,Kx,Ky,λ,l::AnisotropicLayer)
     k0=2π/real(λ)
@@ -142,9 +156,9 @@ function eigenmodes(dnx,dny,Kx,Ky,λ,l::AnisotropicLayer)
     #V is transform between amplitude vector and H-Field
     V=Q*W/Diagonal(q)
     #X the factor applied to the amplitudes when propagatin through the layer
-    X=exp(q*k0*l.thickness)
+    X=exp(Matrix(q*k0*l.thickness))
     #create struct
-    return Eigenmodes(Matrix(V),Matrix(W),X,q)
+    return Eigenmodes(V,W,X,q)
 end
 function eigenmodes(g::RcwaGrid,λ,l::Layer)
     return eigenmodes(g.dnx,g.dny,g.Kx,g.Ky,λ,l)

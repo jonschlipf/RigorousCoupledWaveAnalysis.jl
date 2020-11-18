@@ -12,7 +12,7 @@ air=ConstantPerm(1.0)
 etoh=ConstantPerm(1.353^2)
 al=ModelPerm(al_rakic)
 
-N=3 #one needs much larger N here for accurate results
+N=4 #one needs much larger N here for accurate results
 wls=1100:5:1600
 p=950
 d=480
@@ -24,7 +24,7 @@ nge=SimpleLayer(20,ge)
 ige=SimpleLayer(480,ge)
 mdl=RCWAModel([nha,spa,nsi,nge,ige],etoh,si)
 
-nmax=5
+nmax=3
 
 A=zeros(length(wls),nmax+1)
 R=zeros(length(wls),nmax+1)
