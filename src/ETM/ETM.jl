@@ -32,16 +32,22 @@ function etm_propagate(ref,tra,em,s,grd,get_r=true)
     return ro,to,r,t
 end
 	
-function etm_reftra(s,m::RCWAModel,grd::RcwaGrid,λ,
-ems=eigenmodes(grd,λ,m.layers),ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ),tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ))
-	kzin=grd.k0[3]*real(sqrt(get_permittivity(m.εsup,λ)))
+function etm_reftra(s,m::RCWAModel,grd::RcwaGrid,λ,ems,ref,tra)
+	kzin=grd.k0[3]*real(sqrt(get_permittivity(m.εsup,λ))
     ro,to,r,t=etm_propagate(ref,tra,ems,s,grd,false)
     R=a2p(ro,I,grd.Kx,grd.Ky,ref.Kz,kzin)
     T=a2p(to,I,grd.Kx,grd.Ky,tra.Kz,kzin)
     return R,T
 end
-function etm_reftra_flows(s,m::RCWAModel,grd::RcwaGrid,λ,
-ems=eigenmodes(grd,λ,m.layers),ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ),tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ))
+function etm_reftra(s,m::RCWAModel,grd::RcwaGrid,λ)
+	ems=eigenmodes(grd,λ,m.layers)
+	ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
+	tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ))
+	R,T=etm_reftra(s,m,grd,λ,ems,ref,tra)
+	return R,T
+end
+	
+function etm_reftra_flows(s,m::RCWAModel,grd::RcwaGrid,λ,ems,ref,tra)
 	kzin=grd.k0[3]*real(sqrt(get_permittivity(m.εsup,λ)))
     ro,to,b,a=etm_propagate(ref,tra,ems,s,grd)
     R=a2p(ro,I,grd.Kx,grd.Ky,ref.Kz,kzin)
@@ -49,11 +55,24 @@ ems=eigenmodes(grd,λ,m.layers),ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ),tra=half
 	flw=[etm_flow(a[i],b[i],ems[i],kzin) for i=1:length(a)]
     return R,T,flw
 end
-function etm_amplitudes(s,m::RCWAModel,grd::RcwaGrid,λ,
-ems=eigenmodes(grd,λ,m.layers),ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ),tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ))
+function etm_reftra_flows(s,m::RCWAModel,grd::RcwaGrid,λ)
+	ems=eigenmodes(grd,λ,m.layers)
+	ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
+	tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ))
+	R,T,flw=etm_reftra_flows(s,m,grd,λ,ems,ref,tra)
+	return R,T,flw
+end
+function etm_amplitudes(s,m::RCWAModel,grd::RcwaGrid,λ,ems,ref,tra)
     ro,to,r,t=etm_propagate(ref,tra,ems,s,grd)
 	return cat(ro,r,0ro,dims=1),cat(0to,t,to,dims=1)
 end	
+function etm_amplitudes(s,m::RCWAModel,grd::RcwaGrid,λ)
+	ems=eigenmodes(grd,λ,m.layers)
+	ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
+	tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ))
+	a,b=etm_amplitudes(s,m,grd,λ,ems,ref,tra)
+	return a,b
+end
 function etm_flow(a,b,em,kzin)
 	ex,ey=a2e2d(a+b,em.W)
 	hx,hy=a2e2d(-a+b,em.V)
