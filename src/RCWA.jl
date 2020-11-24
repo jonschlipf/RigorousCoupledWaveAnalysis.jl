@@ -10,7 +10,7 @@ export ngrid,kgrid,rcwagrid
 
 
 export ScatterMatrix,scattermatrix_ref,scattermatrix_tra,scattermatrix_layer,concatenate,scatMatrices
-export srcwa_fieldssrcwa_reftra,scatterSource,srcwa_amplitudes,srcwa_abs
+export srcwa_fields,srcwa_reftra,scatterSource,srcwa_amplitudes,srcwa_abs
 export recip2real,real2recip,recipvec2real
 
 
