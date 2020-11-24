@@ -21,7 +21,7 @@ end
 function scattermatrix_ref(r::Halfspace,V0)
     A=I+V0\Matrix(r.V)
     B=I-V0\Matrix(r.V)
-    Ai=I/A
+    Ai=I/Matrix(A)
     S11=-Ai*B
     S12=2*Ai
     S21=.5*(A-B*Ai*B)
@@ -31,7 +31,7 @@ end
 function scattermatrix_tra(t::Halfspace,V0)
     A=I+V0\Matrix(t.V)
     B=I-V0\Matrix(t.V)
-    Ai=I/A
+    Ai=I/Matrix(A)
     S11=B*Ai
     S12=.5*(A-B*Ai*B)
     S21=2*Ai
@@ -41,7 +41,7 @@ end
 function scattermatrix_layer(e::Eigenmodes,V0)
     A=Matrix(e.W)\I+(Matrix(e.V)\I)*V0
     B=Matrix(e.W)\I-(Matrix(e.V)\I)*V0
-    Ai=I/A
+    Ai=I/Matrix(A)
     common=(A-e.X*B*Ai*e.X*B)\I
     S11=S22=common*(e.X*B*Ai*e.X*A-B)
     S12=S21=common*e.X*(A-B*Ai*B)
