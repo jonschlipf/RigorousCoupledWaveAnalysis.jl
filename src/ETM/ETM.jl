@@ -33,7 +33,7 @@ function etm_propagate(ref,tra,em,s,grd,get_r=true)
 end
 	
 function etm_reftra(s,m::RCWAModel,grd::RcwaGrid,λ,ems,ref,tra)
-	kzin=grd.k0[3]*real(sqrt(get_permittivity(m.εsup,λ))
+	kzin=grd.k0[3]*real(sqrt(get_permittivity(m.εsup,λ)))
     ro,to,r,t=etm_propagate(ref,tra,ems,s,grd,false)
     R=a2p(ro,I,grd.Kx,grd.Ky,ref.Kz,kzin)
     T=a2p(to,I,grd.Kx,grd.Ky,tra.Kz,kzin)
