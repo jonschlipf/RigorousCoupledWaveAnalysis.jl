@@ -33,9 +33,7 @@ function etm_propagate(ref,tra,em,s,grd,get_r=true)
 end
 	
 function etm_reftra(s,m::RCWAModel,grd::RcwaGrid,λ,
-ems=eigenmodes(grd,λ,m.layers))
-    ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
-    tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
+ems=eigenmodes(grd,λ,m.layers),ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ),tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ))
 	kzin=grd.k0[3]*real(sqrt(get_permittivity(m.εsup,λ)))
     ro,to,r,t=etm_propagate(ref,tra,ems,s,grd,false)
     R=a2p(ro,I,grd.Kx,grd.Ky,ref.Kz,kzin)
@@ -43,9 +41,7 @@ ems=eigenmodes(grd,λ,m.layers))
     return R,T
 end
 function etm_reftra_flows(s,m::RCWAModel,grd::RcwaGrid,λ,
-ems=eigenmodes(grd,λ,m.layers))
-    ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
-    tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
+ems=eigenmodes(grd,λ,m.layers),ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ),tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ))
 	kzin=grd.k0[3]*real(sqrt(get_permittivity(m.εsup,λ)))
     ro,to,b,a=etm_propagate(ref,tra,ems,s,grd)
     R=a2p(ro,I,grd.Kx,grd.Ky,ref.Kz,kzin)
@@ -54,9 +50,7 @@ ems=eigenmodes(grd,λ,m.layers))
     return R,T,flw
 end
 function etm_amplitudes(s,m::RCWAModel,grd::RcwaGrid,λ,
-ems=eigenmodes(grd,λ,m.layers))
-    ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
-    tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
+ems=eigenmodes(grd,λ,m.layers),ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ),tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ))
     ro,to,r,t=etm_propagate(ref,tra,ems,s,grd)
 	return cat(ro,r,0ro,dims=1),cat(0to,t,to,dims=1)
 end	
