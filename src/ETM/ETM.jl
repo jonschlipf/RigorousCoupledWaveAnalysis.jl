@@ -42,7 +42,7 @@ end
 function etm_reftra(s,m::RCWAModel,grd::RcwaGrid,λ)
 	ems=eigenmodes(grd,λ,m.layers)
 	ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
-	tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ))
+	tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
 	R,T=etm_reftra(s,m,grd,λ,ems,ref,tra)
 	return R,T
 end
@@ -58,7 +58,7 @@ end
 function etm_reftra_flows(s,m::RCWAModel,grd::RcwaGrid,λ)
 	ems=eigenmodes(grd,λ,m.layers)
 	ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
-	tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ))
+	tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
 	R,T,flw=etm_reftra_flows(s,m,grd,λ,ems,ref,tra)
 	return R,T,flw
 end
@@ -69,7 +69,7 @@ end
 function etm_amplitudes(s,m::RCWAModel,grd::RcwaGrid,λ)
 	ems=eigenmodes(grd,λ,m.layers)
 	ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
-	tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ))
+	tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
 	a,b=etm_amplitudes(s,m,grd,λ,ems,ref,tra)
 	return a,b
 end
