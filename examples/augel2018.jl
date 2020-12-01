@@ -36,15 +36,14 @@ for i=1:length(wls)
 
     λ=wls[i] #get wavelength from array
     grd=rcwagrid(N,N,p,p,1E-5,0,λ)
-    ate,atm=scatterSource(grd,nsup)
+    ate,atm=rcwasource(grd,nsup)
     mtr=scatMatrices(mdl,grd,λ)
     a,b=srcwa_amplitudes(ate,grd,mtr)
     flw=srcwa_abs(a,b,grd.V0,grd.k0[3]*1.353)
     R2[i],T2[i]=srcwa_reftra(ate,mdl,grd,λ)
     R[i]=1-flw[1]
     T[i]=flw[end]
-	ste,stm=etmSource(grd,nsup)
-	R3[i],T3[i]=etm_reftra(ste,mdl,grd,λ)
+	R3[i],T3[i]=etm_reftra(ate,mdl,grd,λ)
 	
     #println(flw)
     #println(R)

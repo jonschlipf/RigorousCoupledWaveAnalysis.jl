@@ -37,7 +37,7 @@ for i=1:length(wls)
 
     λ=wls[i] #get wavelength from array
     grd=rcwagrid(N,N,p,p,1E-5,0,λ)
-    ate,atm=scatterSource(grd,nsup)
+    ate,atm=rcwasource(grd,nsup)
     mtr=scatMatrices(mdl,grd,λ)
     a,b=srcwa_amplitudes(atm,grd,mtr)
     flw=srcwa_abs(a,b,grd.V0,grd.k0[3]*1.353)

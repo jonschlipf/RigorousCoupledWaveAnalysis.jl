@@ -2,12 +2,12 @@
 module ETM
 using LinearAlgebra
 using ..Common
-export etmSource,etm_reftra,etm_amplitudes,etm_propagate,etm_flow,etm_reftra_flows
+export etm_reftra,etm_amplitudes,etm_propagate,etm_flow,etm_reftra_flows
 function F(em)
     return Matrix([em.W em.W;em.V -em.V])
 end
 function etm_propagate(ref,tra,em,s,grd,get_r=true)
-    B=[I I*0;0*I I; -1im*grd.Kx*grd.Ky/tra.Kz -1im*(grd.Ky^2+tra.Kz^2)/tra.Kz;1im*(grd.Kx^2+tra.Kz^2)/tra.Kz 1im*grd.Kx*grd.Ky/tra.Kz]
+	B=[I;tra.V]
     #backward iteration
     a=Array{Array{Complex{Float64},2},1}(undef,length(em))
     b=Array{Array{Complex{Float64},2},1}(undef,length(em))
@@ -15,12 +15,12 @@ function etm_propagate(ref,tra,em,s,grd,get_r=true)
     for cnt=length(em):-1:2
         a[cnt-1],b[cnt-1]=slicehalf(F(em[cnt-1])\F(em[cnt])*[I I*0;I*0 em[cnt].X]*[I ;(b[cnt]/a[cnt])*em[cnt].X])
     end
-    A=Matrix([ I 0*I;0*I I;1im*grd.Kx*grd.Ky/ref.Kz 1im*(ref.Kz^2+grd.Ky*grd.Ky)/ref.Kz;-1im*(grd.Kx*grd.Kx+ref.Kz^2)/ref.Kz -1im*grd.Kx*grd.Ky/ref.Kz])
-    Bprime=Matrix(F(em[1])*[I I*0;I*0 em[1].X]*[I;(b[1]/a[1])*em[1].X])
-    #forward iteratio
+	A=[I;-ref.V]
+    Bprime=F(em[1])*[I;em[1].X*(b[1]/a[1])*em[1].X]
+	#forward iteratio
     t=Array{Array{Complex{Float64},1},1}(undef,length(em))
     r=Array{Array{Complex{Float64},1},1}(undef,length(em))
-    ro,tu=slicehalf(cat(-A,Bprime,dims=2)\s)
+    ro,tu=slicehalf(cat(-A,Bprime,dims=2)\([I;ref.V]*s))
     t[1]=vec(tu)
     for cnt=1:length(em)-1
         t[cnt+1]=a[cnt]\I*(em[cnt].X*t[cnt])
@@ -77,30 +77,6 @@ function etm_flow(a,b,em,kzin)
 	ex,ey=a2e2d(a+b,em.W)
 	hx,hy=a2e2d(a-b,em.V)
 	return -imag(sum(ex.*conj.(hy)-ey.*conj.(hx)))/kzin
-end
-
-function etmSource(grd,nsup)
-	kin=grd.k0*nsup
-    width=(grd.Nx*2+1)*(grd.Ny*2+1)
-    #vertical
-    normal=[0,0,1]
-    #te polarization E-field is perpendicular with z-axis and propagation direction (so, parallel with surface)
-    kte=cross(normal,kin)/norm(cross(normal,kin))
-    #tm polarization E-field is perpendicular with te and propagation direction (so, not necessarily parallel with surface)
-    ktm=cross(kin,kte)/norm(cross(kin,kte))
-    esource=zeros(width*4)*1im
-    esource[convert(Int64,(width+1)/2)]=kte[1]
-    esource[convert(Int64,(width+1)/2)+width]=kte[2]
-    esource[convert(Int64,(width+1)/2)+2*width]=(kte[3]*kin[2]-kte[2]*kin[3])*1im
-    esource[convert(Int64,(width+1)/2)+3*width]=(kte[1]*kin[3]-kte[3]*kin[1])*1im
-    ste=esource
-    esource=zeros(width*4)*1im
-    esource[convert(Int64,(width+1)/2)]=ktm[1]
-    esource[convert(Int64,(width+1)/2)+width]=ktm[2]
-    esource[convert(Int64,(width+1)/2)+2*width]=(ktm[3]*kin[2]-ktm[2]*kin[3])*1im
-    esource[convert(Int64,(width+1)/2)+3*width]=(ktm[1]*kin[3]-ktm[3]*kin[1])*1im
-    stm=esource#/sqrt(epsref)
-    return ste,stm
 end
 
 end

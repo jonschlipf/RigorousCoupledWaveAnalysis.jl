@@ -1,7 +1,7 @@
 
 using LinearAlgebra
 ftype=Float64
-export ngrid,kgrid,rcwagrid,modes_freespace,RcwaGrid
+export ngrid,kgrid,rcwagrid,modes_freespace,RcwaGrid,rcwasource
 """
     RcwaGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
 
@@ -126,5 +126,26 @@ function rcwagrid(Nx::Int64,Ny::Int64,px::Real,py::Real,θ::Real,α::Real,λ::Re
     Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ)
     V0,Kz0=modes_freespace(Kx,Ky)
 	return RcwaGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
+end
+
+function rcwasource(grd,nsup)
+    #incoming wave vector
+    kin=grd.k0*nsup
+    #the total number of scattering states
+    width=(grd.Nx*2+1)*(grd.Ny*2+1)
+    #vertical
+    normal=[0,0,1]
+    #te polarization E-field is perpendicular with z-axis and propagation direction (so, parallel with surface)
+    kte=cross(normal,kin)/norm(cross(normal,kin)
+)
+    #tm polarization E-field is perpendicular with te and propagation direction (so, not necessarily parallel with surface)
+    ktm=cross(kin,kte)/norm(cross(kin,kte))
+    ψ0te=zeros(width*2)*1im
+    ψ0te[convert(Int64,(width+1)/2)]=kte[1]
+    ψ0te[convert(Int64,(width+1)/2)+width]=kte[2]
+    ψ0tm=zeros(width*2)*1im
+    ψ0tm[convert(Int64,(width+1)/2)]=ktm[1]
+    ψ0tm[convert(Int64,(width+1)/2)+width]=ktm[2]
+    return ψ0te,ψ0tm
 end
 

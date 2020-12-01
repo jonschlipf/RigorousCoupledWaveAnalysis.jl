@@ -1,6 +1,6 @@
 module SRCWA
 using LinearAlgebra
-export srcwa_reftra,a2p,slicehalf,scatterSource,srcwa_matrices,Srcwa_matrices,srcwa_amplitudes,srcwa_abs
+export srcwa_reftra,a2p,slicehalf,srcwa_matrices,Srcwa_matrices,srcwa_amplitudes,srcwa_abs
 export srcwa_fields
 
 export innerSource,dipoleRad,pointDipole
@@ -9,25 +9,6 @@ using ..Common
 include("scatterMatrices.jl")
 include("emission.jl")
 
-function scatterSource(grd,nsup)
-	#incoming wave vector
-	kin=grd.k0*nsup
-    #the total number of scattering states
-    width=(grd.Nx*2+1)*(grd.Ny*2+1)
-    #vertical
-    normal=[0,0,1]
-    #te polarization E-field is perpendicular with z-axis and propagation direction (so, parallel with surface)
-    kte=cross(normal,kin)/norm(cross(normal,kin))
-    #tm polarization E-field is perpendicular with te and propagation direction (so, not necessarily parallel with surface)
-    ktm=cross(kin,kte)/norm(cross(kin,kte))
-    a0te=zeros(width*2)*1im
-    a0te[convert(Int64,(width+1)/2)]=kte[1]
-    a0te[convert(Int64,(width+1)/2)+width]=kte[2]
-    a0tm=zeros(width*2)*1im
-    a0tm[convert(Int64,(width+1)/2)]=ktm[1]
-    a0tm[convert(Int64,(width+1)/2)+width]=ktm[2]
-    return a0te,a0tm
-end
 
 
 function srcwa_reftra(a0,model::RCWAModel,grd::RcwaGrid,λ)

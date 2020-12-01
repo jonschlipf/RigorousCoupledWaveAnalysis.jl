@@ -44,7 +44,7 @@ for N=0:nmax
 for i=1:length(wls)
     λ=wls[i] #get wavelength from array
     grd=rcwagrid(N,N,p,p,1E-5,0,λ)
-    ste,stm=etmSource(grd,1.353)
+    ste,stm=rcwasource(grd,1.353)
 println(i)
 	R[i,N+1],T[i,N+1],flw=etm_reftra_flows(ste,mdl,grd,λ)
 	#println(flw)
