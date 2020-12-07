@@ -17,7 +17,7 @@ function etm_propagate(ref,tra,em,ψin,grd,get_r=true)
 	#forward iteratio
     ψm=Array{Array{Complex{Float64},1},1}(undef,length(em))
     ψp=Array{Array{Complex{Float64},1},1}(undef,length(em))
-    ψref,ψm1=slicehalf(cat([I;ref.V],F(em[1])*[em[1].X*(a[1]/b[1])*em[1].X;I],dims=2)\([I;-ref.V]*ψin))
+    ψref,ψm1=slicehalf(-cat([I;ref.V],F(em[1])*[em[1].X*(a[1]/b[1])*em[1].X;I],dims=2)\([I;-ref.V]*ψin))
     ψm[1]=vec(ψm1)
     for cnt=1:length(em)-1
         ψm[cnt+1]=b[cnt]\I*(em[cnt].X*ψm[cnt])
