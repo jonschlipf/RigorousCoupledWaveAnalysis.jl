@@ -73,7 +73,7 @@ end
 function etm_flow(a,b,em,kzin)
 	ex,ey=a2e2d(a+b,em.W)
 	hx,hy=a2e2d(a-b,em.V)
-	return -imag(sum(ex.*conj.(hy)-ey.*conj.(hx)))/kzin
+	return imag(sum(ex.*conj.(hy)-ey.*conj.(hx)))/kzin
 end
 
 end
