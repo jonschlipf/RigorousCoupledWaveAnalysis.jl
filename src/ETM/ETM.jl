@@ -21,9 +21,9 @@ function etm_propagate(ref,tra,em,ψin,grd,get_r=true)
     ψm[1]=vec(ψm1)
     for cnt=1:length(em)-1
         ψm[cnt+1]=b[cnt]\I*(em[cnt].X*ψm[cnt])
-		get_r&&ψp[cnt]=em[cnt].X*a[cnt]*ψm[cnt+1]
+		get_r&&(ψp[cnt]=em[cnt].X*a[cnt]*ψm[cnt+1])
     end
-	get_r&&ψp[1]=em[1].X*(a[1]/b[1])*em[1].X*ψm[1]
+	get_r&&(ψp[1]=em[1].X*(a[1]/b[1])*em[1].X*ψm[1])
     ψtra=b[end]\I*em[end].X*ψm[end]
 	ψp[end]=em[end].X*a[end]*ψtra
     return ψref,ψtra,ψp,ψm
