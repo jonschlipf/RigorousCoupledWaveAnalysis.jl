@@ -8,7 +8,7 @@ include("models.jl")
 include("grids.jl")
 export Eigenmodes,Halfspace
 export eigenmodes,halfspace
-export a2e,a2e2d,a2p,e2p,slicehalf
+export a2e,a2e2d,a2p,e2p,slicehalf,getfields
 """
 	Eigenmodes(V,W,X,q)
 
@@ -40,8 +40,8 @@ struct Halfspace
 end
 """
     eigenmodes(dnx,dny,Kx,Ky,λ,l::Layer)
-    eigenmodes(g::RcwaGrid,λ,l::Layer)
-    eigenmodes(g::RcwaGrid,λ,l::Array{Layer,1})
+    eigenmodes(g::RCWAGrid,λ,l::Layer)
+    eigenmodes(g::RCWAGrid,λ,l::Array{Layer,1})
 Compute the eigenmodes of a layer
 # Arguments
 * `g` :  grid object
@@ -160,10 +160,10 @@ function eigenmodes(dnx,dny,Kx,Ky,λ,l::AnisotropicLayer)
     #create struct
     return Eigenmodes(V,W,X,q)
 end
-function eigenmodes(g::RcwaGrid,λ,l::Layer)
+function eigenmodes(g::RCWAGrid,λ,l::Layer)
     return eigenmodes(g.dnx,g.dny,g.Kx,g.Ky,λ,l)
 end
-function eigenmodes(g::RcwaGrid,λ,l::Array{Layer,1})
+function eigenmodes(g::RCWAGrid,λ,l::Array{Layer,1})
     #initialize array
     rt=Array{Eigenmodes,1}(undef,length(l))
     #iterate through layers
@@ -199,6 +199,7 @@ function halfspace(Kx,Ky,material,λ)
     end
 	#z component of wave vector
 	Kz=sqrt.(Complex.(εzz-Kx*Kx-Ky*Ky))
+	Kz[imag.(Kz).<0].*=-1
 	#simple solution like free space
     q0=[1im*Kz 0I;0I 1im*Kz]
 	#Magnetic field eigenvalues
@@ -307,6 +308,29 @@ function a2e(a,W,Kx,Ky,Kz)
     return ex,ey,ez
 end
 
+function getfields(ain,bout,thi,em,grd,sz,λ)
+    x=[r  for r in -sz[1]/2+.5:sz[1]/2-.5, c in -sz[2]/2+.5:sz[2]/2-.5]/sz[1]
+    y=[c  for r in -sz[1]/2+.5:sz[1]/2-.5, c in -sz[2]/2+.5:sz[2]/2-.5]/sz[2]
+    efield=zeros(size(x,1),size(y,2),sz[3],3)*1im
+    hfield=zeros(size(x,1),size(y,2),sz[3],3)*1im
+    for zind=1:sz[3]
+        #propagation of the waves
+        a=exp(Matrix(em.q*2π/λ*thi*(zind-1)/sz[3]))*ain
+        b=exp(-Matrix(em.q*2π/λ*thi*(zind-1)/sz[3]))*bout
+        #convert amplitude vectors to electric fields
+        ex,ey,ez=a2e(a+b,em.W,grd.Kx,grd.Ky,grd.Kz0)
+        hx,hy,hz=a2e(a-b,em.V,grd.Kx,grd.Ky,grd.Kz0)
+        #convert from reciprocal lattice vectors to real space distribution
+        efield[:,:,zind,1]=recipvec2real(grd.nx,grd.ny,ex,x,y)
+        efield[:,:,zind,2]=recipvec2real(grd.nx,grd.ny,ey,x,y)
+        efield[:,:,zind,3]=recipvec2real(grd.nx,grd.ny,ez,x,y)
+
+        hfield[:,:,zind,1]=recipvec2real(grd.nx,grd.ny,hx,x,y)
+        hfield[:,:,zind,2]=recipvec2real(grd.nx,grd.ny,hy,x,y)
+        hfield[:,:,zind,3]=recipvec2real(grd.nx,grd.ny,hz,x,y)
+    end
+    return efield,hfield
+end
 
 
 end  # module  eigenmodes

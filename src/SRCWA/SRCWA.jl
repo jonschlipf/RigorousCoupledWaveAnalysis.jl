@@ -1,7 +1,6 @@
 module SRCWA
 using LinearAlgebra
 export srcwa_reftra,a2p,slicehalf,srcwa_matrices,Srcwa_matrices,srcwa_amplitudes,srcwa_flow
-export srcwa_fields
 
 export innerSource,dipoleRad,pointDipole
 
@@ -11,7 +10,7 @@ include("emission.jl")
 
 
 
-function srcwa_reftra(a0,model::RCWAModel,grd::RcwaGrid,λ)
+function srcwa_reftra(a0,model::RCWAModel,grd::RCWAGrid,λ)
     ref=halfspace(grd.Kx,grd.Ky,model.εsup,λ)
     tra=halfspace(grd.Kx,grd.Ky,model.εsub,λ)
     S=scattermatrix_ref(ref,grd.V0)
@@ -25,7 +24,7 @@ function srcwa_reftra(a0,model::RCWAModel,grd::RcwaGrid,λ)
     return R,T
 end
 
-function srcwa_reftra(a0,εsup,εsub,S,grd::RcwaGrid,λ)
+function srcwa_reftra(a0,εsup,εsub,S,grd::RCWAGrid,λ)
 	ref=halfspace(grd.Kx,grd.Ky,εsup,λ)
     tra=halfspace(grd.Kx,grd.Ky,εsub,λ)
 	kzin=grd.k0[3]*real(sqrt(get_permittivity(εsup,λ)))
@@ -34,20 +33,28 @@ function srcwa_reftra(a0,εsup,εsub,S,grd::RcwaGrid,λ)
     return R,T
 end
 
-function srcwa_amplitudes(a0,grd::RcwaGrid,mtr::Array{ScatterMatrix,1})
-    a=zeros(length(a0),length(mtr)-1)*1im
-    b=zeros(length(a0),length(mtr)-1)*1im
-    for ct=1:size(a,2)
+function srcwa_amplitudes(source,grd::RCWAGrid,mtr::Array{ScatterMatrix,1})
+    a=Array{Array{Complex{Float64},1},1}(undef,length(mtr))
+    b=Array{Array{Complex{Float64},1},1}(undef,length(mtr))
+    a[1]=source
+	b[1]=concatenate(mtr).S11*a[1]
+	for ct=1:length(a)-1
         Sbefore=concatenate(mtr[1:ct])
         Safter=concatenate(mtr[ct+1:end])
-        a[:,ct]=(I-Sbefore.S22*Safter.S11)\(Sbefore.S21*a0)
-        b[:,ct]=Safter.S11*a[:,ct]
-        #b[:,ct]=(I-Safter.S11*Sbefore.S22)\(Safter.S11*Sbefore.S21*a0)
+        a[ct+1]=(I-Sbefore.S22*Safter.S11)\(Sbefore.S21*source)
+        b[ct+1]=Safter.S11*a[ct+1]
     end
     return a,b
 end
-
-function srcwa_flow(a,b,V0,kzin)
+function srcwa_amplitudes(source,m::RCWAModel,grd::RCWAGrid,λ)
+	mtr=[scattermatrix_layer(eigenmodes(grd,λ,l),grd.V0) for l in m.layers]
+	ref=scattermatrix_ref(halfspace(grd.Kx,grd.Ky,m.εsup,λ),grd.V0)
+	tra=scattermatrix_ref(halfspace(grd.Kx,grd.Ky,m.εsub,λ),grd.V0)
+	mtr=cat(ref,mtr,tra,dims=1)
+	a,b=srcwa_amplitudes(source,grd,mtr)
+	return a,b
+end
+function srcwa_flows(a,b,V0,kzin)
     p=zeros(size(a,2))
     for ct=1:size(a,2)
         ex,ey=a2e2d(a[:,ct]+b[:,ct],I)
@@ -57,41 +64,6 @@ function srcwa_flow(a,b,V0,kzin)
     return p
 end
 
-function srcwa_fields(a,b,ly,em,grd,sz)
-    W0=I+0*grd.V0
-    x=[r  for r in -sz[1]/2+.5:sz[1]/2-.5, c in -sz[2]/2+.5:sz[2]/2-.5]/sz[1]
-    y=[c  for r in -sz[1]/2+.5:sz[1]/2-.5, c in -sz[2]/2+.5:sz[2]/2-.5]/sz[2]
-    efield=zeros(size(x,1),size(y,2),sz[3],3)*1im
-    hfield=zeros(size(x,1),size(y,2),sz[3],3)*1im
-
-    outside=Matrix([W0 W0;grd.V0 -grd.V0])
-    inside=Matrix([em.W+0*em.V em.W+0*em.V;em.V -em.V])
-    ain,bout=slicehalf(inside\outside*[a[:,1];b[:,1]])
-    aout,bin=slicehalf(inside\outside*[a[:,2];b[:,2]])
-
-    for zind=1:sz[3]
-        #propagation of the waves
-        a=(em.X^((zind-.5)/sz[3]))*ain
-        a=exp(Matrix(em.q*grd.k0*ly.thickness*(zind-1)/sz[3]))*ain
-
-        #b=exp(-Matrix(q)*k0*(zind-1))*bout
-        b=(em.X^((sz[3]+.5-zind)/sz[3]))*bin
-        b=exp(Matrix(em.q*grd.k0*ly.thickness*(sz[3]-zind)/sz[3]))*bin
-        #convert amplitude vectors to electric fields
-
-        ex,ey,ez=a2e(a+b,em.W,grd.Kx,grd.Ky,grd.Kz0)
-        hx,hy,hz=a2e(-a+b,em.V,grd.Kx,grd.Ky,grd.Kz0)
-        #convert from reciprocal lattice vectors to real space distribution
-        efield[:,:,zind,1]=recipvec2real(grd.nx,grd.ny,ex,x,y)
-        efield[:,:,zind,2]=recipvec2real(grd.nx,grd.ny,ey,x,y)
-        efield[:,:,zind,3]=recipvec2real(grd.nx,grd.ny,ez,x,y)
-
-        hfield[:,:,zind,1]=recipvec2real(grd.nx,grd.ny,hx,x,y)
-        hfield[:,:,zind,2]=recipvec2real(grd.nx,grd.ny,hy,x,y)
-        hfield[:,:,zind,3]=recipvec2real(grd.nx,grd.ny,hz,x,y)
-    end
-    return efield,hfield
-end
 
 
 end

@@ -29,14 +29,14 @@ function etm_propagate(ref,tra,em,ψin,grd,get_r=true)
     return ψref,ψtra,ψp,ψm
 end
 	
-function etm_reftra(s,m::RCWAModel,grd::RcwaGrid,λ,em,ref,tra)
+function etm_reftra(s,m::RCWAModel,grd::RCWAGrid,λ,em,ref,tra)
 	kzin=grd.k0[3]*real(sqrt(get_permittivity(m.εsup,λ)))
 	ro,to,r,t=etm_propagate(ref,tra,em,s,grd,false)
     R=a2p(ro,I,grd.Kx,grd.Ky,ref.Kz,kzin)
     T=a2p(to,I,grd.Kx,grd.Ky,tra.Kz,kzin)
     return R,T
 end
-function etm_reftra(s,m::RCWAModel,grd::RcwaGrid,λ)
+function etm_reftra(s,m::RCWAModel,grd::RCWAGrid,λ)
 	ems=eigenmodes(grd,λ,m.layers)
 	ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
 	tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
@@ -44,7 +44,7 @@ function etm_reftra(s,m::RCWAModel,grd::RcwaGrid,λ)
 	return R,T
 end
 	
-function etm_reftra_flows(s,m::RCWAModel,grd::RcwaGrid,λ,ems,ref,tra)
+function etm_reftra_flows(s,m::RCWAModel,grd::RCWAGrid,λ,ems,ref,tra)
 	kzin=grd.k0[3]*real(sqrt(get_permittivity(m.εsup,λ)))
     ro,to,b,a=etm_propagate(ref,tra,ems,s,grd)
     R=a2p(ro,I,grd.Kx,grd.Ky,ref.Kz,kzin)
@@ -52,18 +52,18 @@ function etm_reftra_flows(s,m::RCWAModel,grd::RcwaGrid,λ,ems,ref,tra)
 	flw=[etm_flow(a[i],b[i],ems[i],kzin) for i=1:length(a)]
     return R,T,flw
 end
-function etm_reftra_flows(s,m::RCWAModel,grd::RcwaGrid,λ)
+function etm_reftra_flows(s,m::RCWAModel,grd::RCWAGrid,λ)
 	ems=eigenmodes(grd,λ,m.layers)
 	ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
 	tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
 	R,T,flw=etm_reftra_flows(s,m,grd,λ,ems,ref,tra)
 	return R,T,flw
 end
-function etm_amplitudes(s,m::RCWAModel,grd::RcwaGrid,λ,em,ref,tra)
+function etm_amplitudes(s,m::RCWAModel,grd::RCWAGrid,λ,em,ref,tra)
     ro,to,r,t=etm_propagate(ref,tra,em,s,grd)
-	return cat(ro,r,0ro,dims=1),cat(0to,t,to,dims=1)
+	return cat([s],t,[to],dims=1),cat([ro],r,[0ro],dims=1)
 end	
-function etm_amplitudes(s,m::RCWAModel,grd::RcwaGrid,λ)
+function etm_amplitudes(s,m::RCWAModel,grd::RCWAGrid,λ)
 	ems=eigenmodes(grd,λ,m.layers)
 	ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ)
 	tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)

@@ -8,7 +8,7 @@ struct ScatterMatrix
     S21::Array{Complex{Float64},2}
     S22::Array{Complex{Float64},2}
 end
-function scatMatrices(m::RCWAModel,g::RcwaGrid,λ)
+function scatMatrices(m::RCWAModel,g::RCWAGrid,λ)
     s=Array{ScatterMatrix,1}(undef,length(m.layers)+2)
     s[1]=scattermatrix_ref(halfspace(g.Kx,g.Ky,m.εsup,λ),g.V0)
     s[end]=scattermatrix_tra(halfspace(g.Kx,g.Ky,m.εsub,λ),g.V0)
@@ -19,14 +19,14 @@ function scatMatrices(m::RCWAModel,g::RcwaGrid,λ)
 end
 
 function scattermatrix_ref(r::Halfspace,V0)
-    A=I+V0\Matrix(r.V)
+	A=I+V0\Matrix(r.V)
     B=I-V0\Matrix(r.V)
     Ai=I/Matrix(A)
-    S11=-Ai*B
-    S12=2*Ai
-    S21=.5*(A-B*Ai*B)
-    S22=B*Ai
-    return ScatterMatrix(S11,S12,S21,S22)
+	S11=-Ai*B
+   	S12=2*Ai
+   	S21=.5*(A-B*Ai*B)
+   	S22=B*Ai
+	return ScatterMatrix(S11,S12,S21,S22)
 end
 function scattermatrix_tra(t::Halfspace,V0)
     A=I+V0\Matrix(t.V)

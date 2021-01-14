@@ -1,9 +1,9 @@
 
 using LinearAlgebra
 ftype=Float64
-export ngrid,kgrid,rcwagrid,modes_freespace,RcwaGrid,rcwasource
+export ngrid,kgrid,rcwagrid,modes_freespace,RCWAGrid,rcwasource
 """
-    RcwaGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
+    RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
 
 Structure to store a grid for RCWA computation
 # Attributes
@@ -21,7 +21,7 @@ Structure to store a grid for RCWA computation
 * `V0` : Magnetic eigenstate of free space
 * `Kz0` : Wave vector in y, free space
 """
-struct RcwaGrid
+struct RCWAGrid
 	Nx::Int64
 	Ny::Int64
     nx::Array{Int64,1}
@@ -98,10 +98,14 @@ Computes the eigenmodes of propagation through free space, for normalization
 function modes_freespace(Kx::Diagonal{Complex{ftype},Array{Complex{ftype},1}},Ky::Diagonal{Complex{ftype},Array{Complex{ftype},1}})
     #just because |k|=1
     Kz0=sqrt.(Complex.(I-Kx*Kx-Ky*Ky))
+	Kz0[imag.(Kz0).<0].*=-1
+
     #P0 is identity
     Q0=[Kx*Ky I-Kx*Kx;Ky*Ky-I -Ky*Kx]
     #propagation
+
     q0=Diagonal(Matrix([1im*Kz0 0I;0I 1im*Kz0]))
+
     #Free space, so W is identity
     V0=Q0/q0
     return V0,Kz0
@@ -125,7 +129,7 @@ function rcwagrid(Nx::Int64,Ny::Int64,px::Real,py::Real,θ::Real,α::Real,λ::Re
     nx,ny,dnx,dny=ngrid(Nx,Ny)
     Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ)
     V0,Kz0=modes_freespace(Kx,Ky)
-	return RcwaGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
+	return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
 end
 
 function rcwasource(grd,nsup)
