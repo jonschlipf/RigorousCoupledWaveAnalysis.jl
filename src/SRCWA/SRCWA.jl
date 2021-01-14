@@ -1,6 +1,6 @@
 module SRCWA
 using LinearAlgebra
-export srcwa_reftra,a2p,slicehalf,srcwa_matrices,Srcwa_matrices,srcwa_amplitudes,srcwa_abs
+export srcwa_reftra,a2p,slicehalf,srcwa_matrices,Srcwa_matrices,srcwa_amplitudes,srcwa_flow
 export srcwa_fields
 
 export innerSource,dipoleRad,pointDipole
@@ -47,11 +47,11 @@ function srcwa_amplitudes(a0,grd::RcwaGrid,mtr::Array{ScatterMatrix,1})
     return a,b
 end
 
-function srcwa_abs(a,b,V0,kzin)
+function srcwa_flow(a,b,V0,kzin)
     p=zeros(size(a,2))
     for ct=1:size(a,2)
         ex,ey=a2e2d(a[:,ct]+b[:,ct],I)
-        hx,hy=a2e2d(-a[:,ct]+b[:,ct],V0)
+        hx,hy=a2e2d(a[:,ct]-b[:,ct],V0)
         p[ct]=imag(sum(ex.*conj.(hy)-ey.*conj.(hx)))/kzin
     end
     return p

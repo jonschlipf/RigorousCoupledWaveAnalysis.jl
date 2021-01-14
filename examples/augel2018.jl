@@ -5,48 +5,43 @@ Lion Augel, Yuma Kawaguchi, Stefan Bechler, Roman Körner, Jörg Schulze, Hirona
 ACS Photonics 2018, 5, 11, 4586-4593 (2018)
 =#
 using RCWA
-si=InterpolPerm(RCWA.si_schinke)
-ge=InterpolPerm(RCWA.ge_nunley) #Ge from interpolated measured values
-ox=ModelPerm(RCWA.sio2_malitson) #SiO2 from dispersion formula
-air=ConstantPerm(1.0)
-etoh=ConstantPerm(1.353^2)
-al=ModelPerm(RCWA.al_rakic)
+Si=InterpolPerm(RCWA.si_schinke) #Si from interpolated literature values
+Ge=InterpolPerm(RCWA.ge_nunley) #Ge from interpolated literature values
+SiO2=ModelPerm(RCWA.sio2_malitson) #SiO2 from literature dispersion formula
 
-N=3 #one needs much larger N here for accurate results
-wls=1100:5:1600
-p=950
-d=480
+n_H2O=1.321
+n_CH3COOH=1.353 #Constant refractive indices
+Al=ModelPerm(RCWA.al_rakic) #Al from dispersion formula
 
-nha=PatternedLayer(100,[al,etoh],[Circle(d/p)])
-spa=SimpleLayer(50,ox)
-nsi=SimpleLayer(20,si)
-nge=SimpleLayer(20,ge)
-ige=SimpleLayer(480,ge)
-mdl=RCWAModel([nha,spa,nsi,nge,ige],etoh,si)
+N=6 #one needs much larger N (~11 is good, 15 is better) here for accurate results
+wls=1100:5:1600 #wavelength array
+p=950 #pitch
+d=480 #hole diameter
+function build_model(n_sup)
+	nha=PatternedLayer(100,[Al,ConstantPerm(n_sup^2)],[Circle(d/p)])#patterned NHA layer
+	spa=SimpleLayer(50,SiO2)
+	nsi=SimpleLayer(20,Si)
+	nge=SimpleLayer(20,Ge)
+	ige=SimpleLayer(480,Ge)
+	return RCWAModel([nha,spa,nsi,nge,ige],ConstantPerm(n_sup^2),Si)
+end
 
-A=zeros(size(wls))
-R=zeros(size(wls))
-T=zeros(size(wls))
-R2=zeros(size(wls))
-T2=zeros(size(wls))
-R3=zeros(size(wls))
-T3=zeros(size(wls))
-nsup=1.353
+A_H2O=zeros(size(wls)) #array for absorption
+R_H2O=zeros(size(wls)) #array for reflection
+T_H2O=zeros(size(wls)) #array for transmission
+R_CH3COOH=zeros(size(wls))
+T_CH3COOH=zeros(size(wls))
+A_CH3COOH=zeros(size(wls))
 for i=1:length(wls)
-
     λ=wls[i] #get wavelength from array
-    grd=rcwagrid(N,N,p,p,1E-5,0,λ)
-    ate,atm=rcwasource(grd,nsup)
-    mtr=scatMatrices(mdl,grd,λ)
-    a,b=srcwa_amplitudes(ate,grd,mtr)
-    flw=srcwa_abs(a,b,grd.V0,grd.k0[3]*1.353)
-    R2[i],T2[i]=srcwa_reftra(ate,mdl,grd,λ)
-    R[i]=1-flw[1]
-    T[i]=flw[end]
-	R3[i],T3[i]=etm_reftra(ate,mdl,grd,λ)
-	
-    #println(flw)
-    #println(R)
-    #println(T)
-    A[i]=flw[end-1]-flw[end]
+    grd=rcwagrid(N,N,p,p,1E-5,0,λ) #reciprocal space grid
+    #compute for H2O
+	ste,stm=rcwasource(grd,n_H2O) #te and tm source amplitudes
+	R_H2O[i],T_H2O[i],flw=etm_reftra_flows(ste,build_model(n_H2O),grd,λ) #compute ref, tra and power flows for te
+	A_H2O[i]=-flw[end-1]-T_H2O[i] #absorption is the power entering the last layer minus the power leaving the device
+
+	#now same for CH3COOH
+    ste,stm=rcwasource(grd,n_CH3COOH)
+	R_CH3COOH[i],T_CH3COOH[i],flw=etm_reftra_flows(ste,build_model(n_CH3COOH),grd,λ)
+	A_CH3COOH[i]=-flw[end-1]-T_CH3COOH[i]
 end
