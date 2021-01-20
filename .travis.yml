@@ -1,0 +1,12 @@
+language: julia
+os:
+- linux
+julia:
+- 1.4
+- nightly
+matrix:
+allow_failures:
+    - julia: nightly
+fast_finish: true
+notifications:
+email: false
