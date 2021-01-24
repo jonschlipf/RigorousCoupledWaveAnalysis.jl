@@ -10,4 +10,4 @@ allow_failures:
 fast_finish: true
 notifications:
 email: false
-- julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
+
