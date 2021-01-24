@@ -34,14 +34,15 @@ T_CH3COOH=zeros(size(wls))
 A_CH3COOH=zeros(size(wls))
 for i=1:length(wls)
     λ=wls[i] #get wavelength from array
-    grd=rcwagrid(N,N,p,p,1E-5,0,λ) #reciprocal space grid
+    grd=rcwagrid(N,N,p,p,1E-5,0,λ,ConstantPerm(n_H2O^2)) #reciprocal space grid
+	ste,stm=rcwasource(grd) #te and tm source amplitudes
     #compute for H2O
-	ste,stm=rcwasource(grd,n_H2O) #te and tm source amplitudes
 	R_H2O[i],T_H2O[i],flw=etm_reftra_flows(ste,build_model(n_H2O),grd,λ) #compute ref, tra and power flows for te
 	A_H2O[i]=-flw[end-1]-T_H2O[i] #absorption is the power entering the last layer minus the power leaving the device
 
 	#now same for CH3COOH
-    ste,stm=rcwasource(grd,n_CH3COOH)
+    grd=rcwagrid(N,N,p,p,1E-5,0,λ,ConstantPerm(n_H2O^2)) #reciprocal space grid
+	ste,stm=rcwasource(grd) #te and tm source amplitudes
 	R_CH3COOH[i],T_CH3COOH[i],flw=etm_reftra_flows(ste,build_model(n_CH3COOH),grd,λ)
 	A_CH3COOH[i]=-flw[end-1]-T_CH3COOH[i]
 end

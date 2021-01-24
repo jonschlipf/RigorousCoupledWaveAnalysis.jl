@@ -18,18 +18,18 @@ function srcwa_reftra(a0,model::RCWAModel,grd::RCWAGrid,λ)
         S=concatenate(S,scattermatrix_layer(eigenmodes(grd.dnx,grd.dny,grd.Kx,grd.Ky,λ,model.layers[ct]),grd.V0))
     end
     S=concatenate(S,scattermatrix_tra(tra,grd.V0))
-	kzin=grd.k0[3]*real(sqrt(get_permittivity(model.εsup,λ)))
-    R=a2p(S.S11*a0,I,grd.Kx,grd.Ky,ref.Kz,kzin)
-    T=a2p(S.S21*a0,I,grd.Kx,grd.Ky,tra.Kz,kzin)
+	kzin=grd.k0[3]
+	R=a2p(0a0,S.S11*a0,ref.V,I,kzin)
+	T=-a2p(S.S21*a0,0a0,tra.V,I,kzin)
     return R,T
 end
 
 function srcwa_reftra(a0,εsup,εsub,S,grd::RCWAGrid,λ)
 	ref=halfspace(grd.Kx,grd.Ky,εsup,λ)
     tra=halfspace(grd.Kx,grd.Ky,εsub,λ)
-	kzin=grd.k0[3]*real(sqrt(get_permittivity(εsup,λ)))
-	R=a2p(S.S11*a0,I,grd.Kx,grd.Ky,ref.Kz,kzin)
-    T=a2p(S.S21*a0,I,grd.Kx,grd.Ky,tra.Kz,kzin)
+	kzin=grd.k0[3]
+	R=a2p(0a0,S.S11*a0,ref.V,I,kzin)
+	T=-a2p(S.S21*a0,0a0,tra.V,I,kzin)
     return R,T
 end
 

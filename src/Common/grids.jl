@@ -73,10 +73,10 @@ Computes the wave vectors of the plane wave expansion
 * `Ky` : Wave vector in y
 * `k0` : Free-space 0th-order wavevector
 """
-function kgrid(nx::Array{Int64,1},ny::Array{Int64,1},px::Real,py::Real,θ::Real,α::Real,λ::Real)
+function kgrid(nx::Array{Int64,1},ny::Array{Int64,1},px::Real,py::Real,θ::Real,α::Real,λ::Real,sup)
     #all k vectors are generally normalized to k0 here
     #The incoming wave, transformed from spherical coordinates to normalized cartesian coordinates, |k0|=1
-    k0=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]
+    k0=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]*real(sqrt(get_permittivity(sup,λ)))
     #the spatial vectors are the sum of the incoming vector and the reciprocal lattice vectors
     kx=k0[1].+real(λ)*nx/px;
     ky=k0[2].+real(λ)*ny/py;
@@ -111,7 +111,7 @@ function modes_freespace(Kx::Diagonal{Complex{ftype},Array{Complex{ftype},1}},Ky
     return V0,Kz0
 end
 """
-	rcwagrid(Nx,Ny,px,py,θ,α,λ)
+	rcwagrid(Nx,Ny,px,py,θ,α,λ,nsup)
 Computes the eigenmodes of propagation through free space, for normalization
 #Arguments
 * `nx` : Maximum order in x
@@ -125,16 +125,16 @@ Computes the eigenmodes of propagation through free space, for normalization
 *`grd`: RCWA grid struct
 """
 
-function rcwagrid(Nx::Int64,Ny::Int64,px::Real,py::Real,θ::Real,α::Real,λ::Real)
+function rcwagrid(Nx::Int64,Ny::Int64,px::Real,py::Real,θ::Real,α::Real,λ::Real,sup)
     nx,ny,dnx,dny=ngrid(Nx,Ny)
-    Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ)
+    Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ,sup)
     V0,Kz0=modes_freespace(Kx,Ky)
 	return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
 end
 
-function rcwasource(grd,nsup)
+function rcwasource(grd,nsup=1)
     #incoming wave vector
-    kin=grd.k0*nsup
+	kin=grd.k0
     #the total number of scattering states
     width=(grd.Nx*2+1)*(grd.Ny*2+1)
     #vertical

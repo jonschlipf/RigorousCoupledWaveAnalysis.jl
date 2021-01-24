@@ -78,7 +78,7 @@ N=4 #maximum spatial frequency, same for x and y
 α=0 #azimuth angle
 ax=ay=500 #500 nm square cell
 λ=1000 #wavelength
-Grd=rcwagrid(N,N,ax,ay,θ,α,λ) #create the grid
+Grd=rcwagrid(N,N,ax,ay,θ,α,λ,Air) #create the grid, superstrate is air
 ```
 
 ### Solution
@@ -86,19 +86,19 @@ Grd=rcwagrid(N,N,ax,ay,θ,α,λ) #create the grid
 One can employ the enhanced transmission matrix (etm) approach to solve the Maxwell equations for their system. This will yield the reflected and transmitted power.
 
 ```julia
-ste,stm=rcwasource(Grd,1.0)    #create a source object with the refractive index of air
+ste,stm=rcwasource(Grd)    #create a source object
 Rte,Tte=etm_reftra(ste,Mdl,Grd,λ) #run the etm algorithm for TE polarization
 Rtm,Ttm=etm_reftra(stm,Mdl,Grd,λ) #run the etm algorithm for TM polarization
 ```
 The scatter matrix method can be called in the same manner.
 ```julia
-ste,stm=rcwasource(Grd.kin,N,N)    #create a source object
+ste,stm=rcwasource(Grd)    #create a source object
 Rte,Tte=srcwa_reftra(ste,Mdl,Grd,λ) #run the srcwa algorithm for TE polarization
 Rtm,Ttm=srcwa_reftra(stm,Mdl,Grd,λ) #run the srcwa algorithm for TM polarization
 ```
 Absorptions within the layers can be computed from the power flows between them
 ```julia
-ste,stm=rcwasource(Grd,1.0)    #create a source object with the refractive index of air
+ste,stm=rcwasource(Grd)    #create a source object
 Rte,Tte,fte=etm_reftra_flows(ste,Mdl,Grd,λ) #TE
 Ate=-fte[end]-Tte #absorption in lowest layer
 Rtm,Ttm,ftm=etm_reftra_flows(stm,Mdl,Grd,λ) #TM

@@ -8,7 +8,7 @@ include("models.jl")
 include("grids.jl")
 export Eigenmodes,Halfspace
 export eigenmodes,halfspace
-export a2e,a2e2d,a2p,e2p,slicehalf,getfields
+export a2e,a2e2d,a2p,e2p,slicehalf,getfields,a2p2
 """
 	Eigenmodes(V,W,X,q)
 
@@ -186,7 +186,7 @@ Compute the eigenmodes of a halfspace
 """
 function halfspace(Kx,Ky,material,λ)
     #Base value
-	εxx=get_permittivity(material,λ,1)*I
+	εxx=real(sqrt(get_permittivity(material,λ,1)))^2*I
     #probably add off-diagonal elements
 	if typeof(material)<:Isotropic
         εzz=εyy=εxx
@@ -247,7 +247,7 @@ end
 
 
 """
-    a2p(a,W,Kx,Ky,Kz,kz0)
+    a2p2(a,W,Kx,Ky,Kz,kz0)
 
 Converts an amplitude vector (in substrate or superstrate) to Poynting power flow in z direction
 # Arguments
@@ -261,10 +261,30 @@ Converts an amplitude vector (in substrate or superstrate) to Poynting power flo
 * `P` : power flow
 """
 
-function a2p(a,W,Kx,Ky,Kz,kz0)
+function a2p2(a,W,Kx,Ky,Kz,kz0)
     ex,ey,ez=a2e(a,W,Kx,Ky,Kz)
     return e2p(ex,ey,ez,Kz,kz0)
 end
+"""
+    a2p2(a,W,Kx,Ky,Kz,kz0)
+
+Converts an amplitude vector (in substrate or superstrate) to Poynting power flow in z direction
+# Arguments
+* `a` : forward amplitude vector
+* `b` : backward amplitude vector
+* `V` : H-field eigenmodes of the halfspace
+* `W` : E-fieldeigenmodes of the halfspace
+* `kz0` : z component of the plane wave wavevector in the superstrate
+# Outputs
+* `P` : power flow
+"""
+
+function a2p(a,b,V,W,kzin)
+    ex,ey=a2e2d(a+b,W)
+    hx,hy=a2e2d(a-b,V)
+    return imag(sum(ex.*conj.(hy)-ey.*conj.(hx)))/kzin
+end
+
 
 """
     a2e2d(a,W)

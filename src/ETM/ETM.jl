@@ -34,10 +34,10 @@ if length(em)>0
 end
 	
 function etm_reftra(s,m::RCWAModel,grd::RCWAGrid,λ,em,ref,tra)
-	kzin=grd.k0[3]*real(sqrt(get_permittivity(m.εsup,λ)))
+	kzin=grd.k0[3]#*real(sqrt(get_permittivity(m.εsup,λ)))
 	ro,to,r,t=etm_propagate(ref,tra,em,s,grd,false)
-    R=a2p(ro,I,grd.Kx,grd.Ky,ref.Kz,kzin)
-    T=a2p(to,I,grd.Kx,grd.Ky,tra.Kz,kzin)
+    R=a2p(0ro,ro,ref.V,I,kzin)
+    T=-a2p(to,0to,tra.V,I,kzin)
     return R,T
 end
 function etm_reftra(s,m::RCWAModel,grd::RCWAGrid,λ)
@@ -49,10 +49,10 @@ function etm_reftra(s,m::RCWAModel,grd::RCWAGrid,λ)
 end
 	
 function etm_reftra_flows(s,m::RCWAModel,grd::RCWAGrid,λ,ems,ref,tra)
-	kzin=grd.k0[3]*real(sqrt(get_permittivity(m.εsup,λ)))
+	kzin=grd.k0[3]#*real(sqrt(get_permittivity(m.εsup,λ)))
     ro,to,b,a=etm_propagate(ref,tra,ems,s,grd)
-    R=a2p(ro,I,grd.Kx,grd.Ky,ref.Kz,kzin)
-    T=a2p(to,I,grd.Kx,grd.Ky,tra.Kz,kzin)
+    R=a2p(0ro,ro,ref.V,I,kzin)
+    T=-a2p(to,0to,tra.V,I,kzin)
 	flw=[etm_flow(a[i],b[i],ems[i],kzin) for i=1:length(a)]
     return R,T,flw
 end
