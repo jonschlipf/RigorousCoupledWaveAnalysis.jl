@@ -2,10 +2,6 @@
 
 This implements both the scattering matrix and the enhanced transmission matrix RCWA algorithms in julia for periodic multilayer structures in nano-optics and RF.
 
-# Package Example
-
-https://travis-ci.com/jonschlipf/RCWA.jl.svg?branch=master
-
 | Status | Coverage |
 | :----: | :----: |
 | [![Build Status](https://travis-ci.com/jonschlipf/RCWA.jl.svg?branch=master)](https://travis-ci.com/jonschlipf/RCWA.jl) | [![codecov.io](http://codecov.io/gh/jonschlipf/RCWA.jl/coverage.svg?branch=master)](http://codecov.io/gh/jonschlipf/RCWA.jl?branch=master) |
