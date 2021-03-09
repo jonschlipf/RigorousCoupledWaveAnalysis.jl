@@ -1,4 +1,4 @@
-# RCWA.jl
+# RCWA.jl - Rigorous Coupled-Wave Analysis
 
 This implements both the scattering matrix and the enhanced transmission matrix RCWA algorithms in julia for periodic multilayer structures in nano-optics and RF.
 
