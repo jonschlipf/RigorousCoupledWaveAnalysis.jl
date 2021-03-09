@@ -1,7 +1,7 @@
 name = "RCWA"
 uuid = "c8f76c1c-e1da-11e9-2f58-db462fa08db6"
 authors = ["jonschlipf <schlipf.jon@gmx.net>"]
-version = "0.1.0"
+version = "1.0.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
