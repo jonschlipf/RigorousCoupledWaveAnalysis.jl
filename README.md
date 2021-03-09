@@ -53,7 +53,7 @@ f=bitrand(100,100) #define the geometry of the unit cell as a random 10x10 bit m
 F=real2recip(dnx,dny,f) #Fourier transform the geometry to the reciprocal space grid
 Geo=Custom(F) #custom geometry object with the defined structure
 ```
-###Layers
+### Layers
 
 There are structures implemented for simple (=homogenous) layers and patterned layers. A plain layer requires just a thickness and a material object. A patterned layer is defined by its thickness, an array of materials (at least one) and an array of geometry objects (the size of the geometry array should be one smaller than that of the materials array).
 
@@ -64,7 +64,8 @@ nsi=SimpleLayer(20,Si)
 nge=SimpleLayer(20,Ge)
 ige=SimpleLayer(480,Ge)
 ```
-###Building models
+### Building models
+
 A model object requires an arrays of layers (sorted in direction of the light propagation) and the materials for the superstrate and substrate halfspaces.
 
 ```julia
