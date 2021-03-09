@@ -109,7 +109,7 @@ Ate=-fte[end]-Tte #absorption in lowest layer
 Rtm,Ttm,ftm=etm_reftra_flows(stm,Mdl,Grd,λ) #TM
 Ate=-ftm[end]-Ttm #absorption in lowest layer
 ```
-###Local fields
+### Local fields
 
 Local electric and magnetic fields are obtainable via the propagating amplitudes as well:
 ```julia
