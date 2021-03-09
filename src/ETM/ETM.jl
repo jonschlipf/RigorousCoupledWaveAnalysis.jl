@@ -67,7 +67,7 @@ lation)
 * `R` : reflection by the device 
 * `T` : transmission by the device 
 """
-function etm_reftra(ψin,m::RCWAModel,grd::RCWAGrid,λ,em,ref,tra)
+function etm_reftra(ψin,m::RCWAModel,grd::RCWAGrid,λ,em,sup,sub)
 	kzin=grd.k0[3]#*real(sqrt(get_permittivity(m.εsup,λ)))
 	ro,to,r,t=etm_propagate(sup,sub,em,ψin,grd,false) #propagate amplitudes
     R=a2p(0ro,ro,sup.V,I,kzin) #compute amplitudes to powers
@@ -99,11 +99,11 @@ lation)
 * `T` : transmission by the device 
 * `flw` : array containing the power flows between layers 
 """
-function etm_reftra_flows(s,m::RCWAModel,grd::RCWAGrid,λ,ems,ref,tra)
+function etm_reftra_flows(s,m::RCWAModel,grd::RCWAGrid,λ,ems,sup,sub)
 	kzin=grd.k0[3]#*real(sqrt(get_permittivity(m.εsup,λ)))
-    ro,to,b,a=etm_propagate(ref,tra,ems,s,grd) #propagate waves
-    R=a2p(0ro,ro,ref.V,I,kzin) #reflected and transmitted power
-    T=-a2p(to,0to,tra.V,I,kzin)
+    ro,to,b,a=etm_propagate(sup,sub,ems,s,grd) #propagate waves
+    R=a2p(0ro,ro,sup.V,I,kzin) #reflected and transmitted power
+    T=-a2p(to,0to,sub.V,I,kzin)
 	flw=[etm_flow(a[i],b[i],ems[i],kzin) for i=1:length(a)] #intermediate power flows
     return R,T,flw
 end
