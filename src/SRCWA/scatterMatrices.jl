@@ -46,7 +46,7 @@ Computes the scattering matrix of the superstrate halfspace
 # Outputs
 * `S` : scattering matrix
 """
-function scattermatrix_ref(r::Halfspace,V0)
+function scattermatrix_ref(sup::Halfspace,V0)
 	A=I+V0\Matrix(sup.V) #boundary conditions, W=W0=I
     B=I-V0\Matrix(sup.V)
     Ai=I/Matrix(A) #precompute inverse for speed
