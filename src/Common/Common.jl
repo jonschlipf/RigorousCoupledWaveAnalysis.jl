@@ -236,7 +236,6 @@ Converts the reciprocal-space electric field (in a substrate or superstrate) int
 # Outputs
 * `P` : power flow
 """
-
 function e2p(ex,ey,ez,Kz,kz0)
     #amplitudes squared
     P=abs.(ex).^2+abs.(ey).^2+abs.(ez).^2
@@ -260,13 +259,12 @@ Converts an amplitude vector (in substrate or superstrate) to Poynting power flo
 # Outputs
 * `P` : power flow
 """
-
 function a2p2(a,W,Kx,Ky,Kz,kz0)
     ex,ey,ez=a2e(a,W,Kx,Ky,Kz)
     return e2p(ex,ey,ez,Kz,kz0)
 end
 """
-    a2p2(a,W,Kx,Ky,Kz,kz0)
+    a2p(a,b,W,Kx,Ky,kz0)
 
 Converts an amplitude vector (in substrate or superstrate) to Poynting power flow in z direction
 # Arguments
@@ -278,11 +276,10 @@ Converts an amplitude vector (in substrate or superstrate) to Poynting power flo
 # Outputs
 * `P` : power flow
 """
-
-function a2p(a,b,V,W,kzin)
+function a2p(a,b,V,W,kz0)
     ex,ey=a2e2d(a+b,W)
     hx,hy=a2e2d(a-b,V)
-    return imag(sum(ex.*conj.(hy)-ey.*conj.(hx)))/kzin
+    return imag(sum(ex.*conj.(hy)-ey.*conj.(hx)))/kz0
 end
 
 
@@ -320,7 +317,6 @@ converts an amplitude vector (in substrate or superstrate) to reciprocal-space e
 * `ey` : y-component of the electric field
 * `ez` : z-component of the electric field
 """
-
 function a2e(a,W,Kx,Ky,Kz)
 	ex,ey=a2e2d(a,W)
 	#Plane wave, E⊥k, E*k=0
@@ -328,12 +324,31 @@ function a2e(a,W,Kx,Ky,Kz)
     return ex,ey,ez
 end
 
+"""
+    getfields(ain,bout,thi,em::Eigenmodes,grd::RCWAGrid,sz,λ)
+
+computes the electric and magnetic fields within a layer
+# Arguments
+* `ain` : amplitude vector entering the layer from the previous layer
+* `bout` : amplitude vector leaving the layer towards the previous layer
+* `thi` : thickness of the layer
+* `em` : eigenmodes of the layer
+* `grd` : reciprocal space grid object
+* `sz` : three-element vector specifying the number of points in x, y, and z for which the fields are to be computed
+* `λ` : wavelength
+# Outputs
+* `efield` : 4D tensor for the electric field (dimensions are x, y, z, and the component (E_x or E_y or E_z)
+* `hfield` : 4D tensor for the magnetic field (dimensions are x, y, z, and the component (E_x or E_y or E_z)
+"""
 function getfields(ain,bout,thi,em,grd,sz,λ)
+	#create the x and y components of the real-space rectilinear grid
     x=[r  for r in -sz[1]/2+.5:sz[1]/2-.5, c in -sz[2]/2+.5:sz[2]/2-.5]/sz[1]
     y=[c  for r in -sz[1]/2+.5:sz[1]/2-.5, c in -sz[2]/2+.5:sz[2]/2-.5]/sz[2]
+	#initialize the fields
     efield=zeros(size(x,1),size(y,2),sz[3],3)*1im
     hfield=zeros(size(x,1),size(y,2),sz[3],3)*1im
-    for zind=1:sz[3]
+    #loop through z constants
+	for zind=1:sz[3]
         #propagation of the waves
         a=exp(Matrix(em.q*2π/λ*thi*(zind-1)/sz[3]))*ain
         b=exp(-Matrix(em.q*2π/λ*thi*(zind-1)/sz[3]))*bout

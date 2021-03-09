@@ -4,7 +4,6 @@ ftype=Float64
 export ngrid,kgrid,rcwagrid,modes_freespace,RCWAGrid,rcwasource
 """
     RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
-
 Structure to store a grid for RCWA computation
 # Attributes
 * `Nx` : Maximum order in x
@@ -88,12 +87,12 @@ end
 """
     modes_freespace(Kx,Ky)
 Computes the eigenmodes of propagation through free space, for normalization
-#Arguments
-*`Kx`: x-axis component of the propagation vector
-*`Ky`: y-axis component of the propagation vector
-#Outputs
-*`V0`: coordinate transform between free space eigenmode amplitude and magnetic field
-*`Kz0`: z-axis component of the propagation vector in free space
+# Arguments
+* `Kx`: x-axis component of the propagation vector
+* `Ky`: y-axis component of the propagation vector
+# Outputs
+* `V0`: coordinate transform between free space eigenmode amplitude and magnetic field
+* `Kz0`: z-axis component of the propagation vector in free space
 """
 function modes_freespace(Kx::Diagonal{Complex{ftype},Array{Complex{ftype},1}},Ky::Diagonal{Complex{ftype},Array{Complex{ftype},1}})
     #just because |k|=1
@@ -111,9 +110,9 @@ function modes_freespace(Kx::Diagonal{Complex{ftype},Array{Complex{ftype},1}},Ky
     return V0,Kz0
 end
 """
-	rcwagrid(Nx,Ny,px,py,θ,α,λ,nsup)
-Computes the eigenmodes of propagation through free space, for normalization
-#Arguments
+	rcwagrid(Nx,Ny,px,py,θ,α,λ,sup)
+Create a reciprocal space grid for RCWA simulation
+# Arguments
 * `nx` : Maximum order in x
 * `ny` : Maximum order in y
 * `px` : Structure pitch in x
@@ -121,18 +120,26 @@ Computes the eigenmodes of propagation through free space, for normalization
 * `θ` : inclination angle of incoming wave
 * `α` : azimuth angle of incoming wave
 * `λ` : wavelength
-#Outputs
-*`grd`: RCWA grid struct
+* `sup` : superstrate material
+# Outputs
+* `grd`: RCWA grid struct
 """
-
 function rcwagrid(Nx::Int64,Ny::Int64,px::Real,py::Real,θ::Real,α::Real,λ::Real,sup)
     nx,ny,dnx,dny=ngrid(Nx,Ny)
     Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ,sup)
     V0,Kz0=modes_freespace(Kx,Ky)
 	return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
 end
-
-function rcwasource(grd,nsup=1)
+"""
+	rcwasource(grd)
+Create a reciprocal space grid for RCWA simulation
+# Arguments
+* `grd`: RCWA grid struct
+# Outputs
+* `ψte`: Amplitude vector describing an incoming TE wave
+* `ψtm`: Amplitude vector describing an incoming TM wave
+"""
+function rcwasource(grd,nsup=1) #nsup specification is deprecated here
     #incoming wave vector
 	kin=grd.k0
     #the total number of scattering states
@@ -144,9 +151,12 @@ function rcwasource(grd,nsup=1)
 )
     #tm polarization E-field is perpendicular with te and propagation direction (so, not necessarily parallel with surface)
     ktm=cross(kin,kte)/norm(cross(kin,kte))
+	#initialize array
     ψ0te=zeros(width*2)*1im
+	#prefill the 0th scattering order elements for x and y
     ψ0te[convert(Int64,(width+1)/2)]=kte[1]
     ψ0te[convert(Int64,(width+1)/2)+width]=kte[2]
+	#same for tm
     ψ0tm=zeros(width*2)*1im
     ψ0tm[convert(Int64,(width+1)/2)]=ktm[1]
     ψ0tm[convert(Int64,(width+1)/2)+width]=ktm[2]

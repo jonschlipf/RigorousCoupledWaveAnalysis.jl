@@ -4,12 +4,13 @@ using SpecialFunctions,FFTW
 export recip2real,recipvec2real,real2recip
 """
 	real2recip(dnx,dny,f)
+
 Converts a 2D real space pattern into a reciprocal space convolution matrix
 # Arguments
 * `dnx` : reciprocal space grid in x
 * `dny` : reciprocal space grid in y
 * `f` : binary real-space representation of a pattern
-#Output
+# Output
 * `F`: reciprocal space convolution of f
 """
 function real2recip(dnx,dny,f)
@@ -27,6 +28,7 @@ end
 """
 	recip2real(dnx,dny,F)
 	recip2real(dnx,dny,F,sx,sy)
+
 Converts a reciprocal space convolution matrix into a 2D real space pattern. sx and sy can be specified to increase the image resolution. If not specified, an fft is carried out directly, and the result has the same size as the reciprocal space representation.
 # Arguments
 * `dnx` : reciprocal space grid in x
@@ -34,7 +36,7 @@ Converts a reciprocal space convolution matrix into a 2D real space pattern. sx 
 * `F`: reciprocal space convolution matrix
 * `sx`: number of pixels in the result along the x axis
 * `sy`: number of pixels in the result along the y axis
-#Output
+# Output
 * `f` : binary real-space representation corresponding to F
 """
 function recip2real(dnx,dny,F)
@@ -51,7 +53,6 @@ function recip2real(dnx,dny,F)
     end
     return ifft(ifftshift(F0))*length(F0) #transform to real space domain
 end
-
 function recip2real(dnx,dny,F,sx,sy)
     a=maximum(abs.(dnx)) #the maximum dnx value, =2N
     b=maximum(abs.(dny))
@@ -90,6 +91,7 @@ end
 #Output: real space image
 """
 	recipvec2real(nx,ny,F,x,y)
+
 Converts a reciprocal space amplitude vector into a 2D real space map.
 # Arguments
 * `nx` : reciprocal space grid in x
@@ -97,10 +99,9 @@ Converts a reciprocal space amplitude vector into a 2D real space map.
 * `F`: reciprocal space amplitude vector
 * `x`: x coordinates of desired points
 * `y`: y coordinates of desired points
-#Output
+# Output
 * `f` : 2D real space map
 """
-
 function recipvec2real(nx,ny,F,x,y)
     f=zeros(size(x))*1im
     for i=1:size(x,1)
