@@ -1,10 +1,10 @@
-# RCWA.jl - Rigorous Coupled-Wave Analysis
+# RigorousCoupledWaveAnalysis.jl - Rigorous Coupled-Wave Analysis (RCWA)
 
 This implements both the scattering matrix and the enhanced transmission matrix RCWA algorithms in julia for periodic multilayer structures in nano-optics and RF.
 
 | Status | Coverage |
 | :----: | :----: |
-| [![Build Status](https://travis-ci.com/jonschlipf/RCWA.jl.svg?branch=master)](https://travis-ci.com/jonschlipf/RCWA.jl) | [![codecov.io](http://codecov.io/gh/jonschlipf/RCWA.jl/coverage.svg?branch=master)](http://codecov.io/gh/jonschlipf/RCWA.jl?branch=master) |
+| [![Build Status](https://travis-ci.com/jonschlipf/RigorousCoupledWaveAnalysis.jl.svg?branch=master)](https://travis-ci.com/jonschlipf/RigorousCoupledWaveAnalysis.jl) | [![codecov.io](http://codecov.io/gh/jonschlipf/RigorousCoupledWaveAnalysis.jl/coverage.svg?branch=master)](http://codecov.io/gh/jonschlipf/RigorousCoupledWaveAnalysis.jl?branch=master) |
 
 ## Modeling
 
@@ -24,14 +24,14 @@ M2=InterpolPerm(E) #model with interpolated permittivity
 ```
 Some literature materials are already included by default. More can be incorporated on request.
 ```julia
-Si=InterpolPerm(RCWA.si_schinke) #Si from interpolated literature values
-Ge=InterpolPerm(RCWA.ge_nunley) #Ge from interpolated literature values
-SiO2=ModelPerm(RCWA.sio2_malitson) #SiO2 from literature dispersion formula
-Al=ModelPerm(RCWA.al_rakic) #Al from literature dispersion formula
+Si=InterpolPerm(RigorousCoupledWaveAnalysis.si_schinke) #Si from interpolated literature values
+Ge=InterpolPerm(RigorousCoupledWaveAnalysis.ge_nunley) #Ge from interpolated literature values
+SiO2=ModelPerm(RigorousCoupledWaveAnalysis.sio2_malitson) #SiO2 from literature dispersion formula
+Al=ModelPerm(RigorousCoupledWaveAnalysis.al_rakic) #Al from literature dispersion formula
 ```
 ### Geometry
 
-One can specify the distribution of materials within each layer with simple geometric shapes. Currently, the package analytically implements rectangular and elliptic inclusions. Rotation and translation in the plane is also possible. All coordinates are relative to the cell size in the respective direction. For simple verification of the geometry design, the RCWA.drawable function yields the x and y coordinates of the outline. 
+One can specify the distribution of materials within each layer with simple geometric shapes. Currently, the package analytically implements rectangular and elliptic inclusions. Rotation and translation in the plane is also possible. All coordinates are relative to the cell size in the respective direction. For simple verification of the geometry design, the RigorousCoupledWaveAnalysis.drawable function yields the x and y coordinates of the outline. 
 
 ```julia
 R=Rectangle(.2,.2) #create rectangle with width and height one fifth of the cell size
@@ -40,7 +40,7 @@ R=Rotation(R,pi/4) #rotate the rectangle in the plane by 45 degrees
 E=Shift(E,.8,.1) #shift the ellipse in x-direction by 0.8 and in y-direction by 0.1
 Geo=Combination([R,E]) #combine the ellipse and rectangle into one geometry object
 Cir=Circle(480/950) #a circle with a diameter of 480 nm in a unit cell with a pitch of 950 nm
-x,y=RCWA.drawable(Geo)
+x,y=RigorousCoupledWaveAnalysis.drawable(Geo)
 ```
 
 It is also possible to compute the RCWA for arbitrary structures defined by a bit mask using the Fourier transform. Here, a reciprocal space grid is required before modeling. See the section on grids below for guidelines how to choose the grid order.
@@ -113,19 +113,19 @@ Ate=-ftm[end]-Ttm #absorption in lowest layer
 
 Local electric and magnetic fields are obtainable via the propagating amplitudes as well:
 ```julia
-em=RCWA.eigenmodes(Grd,λ,ly)      #get the eigenmodes of propagation in the first layer (this is the nanohole array)
+em=RigorousCoupledWaveAnalysis.eigenmodes(Grd,λ,ly)      #get the eigenmodes of propagation in the first layer (this is the nanohole array)
 a,b=etm_amplitudes(ste,Mdl,Grd,λ) #get propagating wave amplitudes inside layer
 points=[100,100,10]               #set the number of points to compute in x,y,z
-E,H=RCWA.getfields(a[1],b[1],Mdl.layers[1].thickness,em,Grd,points,λ) #compute the electric and magnetic field
+E,H=RigorousCoupledWaveAnalysis.getfields(a[1],b[1],Mdl.layers[1].thickness,em,Grd,points,λ) #compute the electric and magnetic field
 ```
 Or via scattering matrix algorithm:
 ```julia
 using LinearAlgebra
-em=RCWA.eigenmodes(Grd,λ,ly)        #get the eigenmodes of propagation in the first layer (this is the nanohole array)
+em=RigorousCoupledWaveAnalysis.eigenmodes(Grd,λ,ly)        #get the eigenmodes of propagation in the first layer (this is the nanohole array)
 a,b=srcwa_amplitudes(ste,Mdl,Grd,λ) #get propagating wave amplitudes outside layer
 ain,bout=slicehalf(.5*[em.W\I+em.V\Grd.V0 em.W\I-em.V\Grd.V0;em.W\I-em.V\Grd.V0 em.W\I+em.V\Grd.V0]*[a[:,1];b[:,1]]) #get propagating wave amplitudes inside layer
 points=[100,100,10]               #set the number of points to compute in x,y,z
-E,H=RCWA.getfields(a[1],b[1],Mdl.layers[1].thickness,em,Grd,points,λ) #compute the electric and magnetic field
+E,H=RigorousCoupledWaveAnalysis.getfields(a[1],b[1],Mdl.layers[1].thickness,em,Grd,points,λ) #compute the electric and magnetic field
 ```
 
 

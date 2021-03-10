@@ -4,14 +4,14 @@ Lion Augel, Yuma Kawaguchi, Stefan Bechler, Roman Körner, Jörg Schulze, Hirona
 "Integrated Collinear Refractive Index Sensor with Ge PIN Photodiodes,"
 ACS Photonics 2018, 5, 11, 4586-4593 (2018)
 =#
-using RCWA
-Si=InterpolPerm(RCWA.si_schinke) #Si from interpolated literature values
-Ge=InterpolPerm(RCWA.ge_nunley) #Ge from interpolated literature values
-SiO2=ModelPerm(RCWA.sio2_malitson) #SiO2 from literature dispersion formula
+using RigorousCoupledWaveAnalysis
+Si=InterpolPerm(RigorousCoupledWaveAnalysis.si_schinke) #Si from interpolated literature values
+Ge=InterpolPerm(RigorousCoupledWaveAnalysis.ge_nunley) #Ge from interpolated literature values
+SiO2=ModelPerm(RigorousCoupledWaveAnalysis.sio2_malitson) #SiO2 from literature dispersion formula
 
 n_H2O=1.321
 n_CH3COOH=1.353 #Constant refractive indices
-Al=ModelPerm(RCWA.al_rakic) #Al from dispersion formula
+Al=ModelPerm(RigorousCoupledWaveAnalysis.al_rakic) #Al from dispersion formula
 
 N=6 #one needs much larger N (~11 is good, 15 is better) here for accurate results
 wls=1100:5:1600 #wavelength array

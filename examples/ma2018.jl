@@ -5,11 +5,11 @@ Zhijie Ma, Yi Li, Yang Li, Yandong Gong, Stefan A. Maier, and Minghui Hong,
 Opt. Express 26, 6067-6078 (2018)
 """
 #Figure 2 A
-using RCWA
+using RigorousCoupledWaveAnalysis
 
 #required materials
-ge=InterpolPerm(RCWA.ge_nunley) #Ge from interpolated measured values
-ox=ModelPerm(RCWA.sio2_malitson) #SiO2 from dispersion formula
+ge=InterpolPerm(RigorousCoupledWaveAnalysis.ge_nunley) #Ge from interpolated measured values
+ox=ModelPerm(RigorousCoupledWaveAnalysis.sio2_malitson) #SiO2 from dispersion formula
 air=ConstantPerm(1.0) #superstrate material is air
 
 #parameters of structure and kgrid

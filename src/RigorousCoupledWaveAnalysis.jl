@@ -1,4 +1,4 @@
-module RCWA
+module RigorousCoupledWaveAnalysis
 export InterpolPerm,InterpolPermA,ConstantPerm,ConstantPermA,ModelPerm,get_permittivity
 export Circle,Rectangle,Ellipse,Custom
 export Combination,Rotation,Shift

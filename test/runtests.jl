@@ -1,4 +1,4 @@
-using RCWA,LinearAlgebra
+using RigorousCoupledWaveAnalysis,LinearAlgebra
 using Test
 include("analytical.jl")
 @testset "VerticalIncidence" begin
@@ -60,9 +60,9 @@ n1=1+10rand()+10rand()*1im
 α=360rand()
 grd=rcwagrid(0,0,100rand(),100rand(),θ,α,λ,ConstantPerm(n1^2))
 ste,stm=rcwasource(grd,real(n1))
-ref=RCWA.halfspace(grd.Kx,grd.Ky,ConstantPerm(n1^2),λ)
-P1=-RCWA.a2p(ste,0ste,ref.V,I,grd.k0[3])
-P2=-RCWA.a2p(stm,0ste,ref.V,I,grd.k0[3])
+ref=RigorousCoupledWaveAnalysis.halfspace(grd.Kx,grd.Ky,ConstantPerm(n1^2),λ)
+P1=-RigorousCoupledWaveAnalysis.a2p(ste,0ste,ref.V,I,grd.k0[3])
+P2=-RigorousCoupledWaveAnalysis.a2p(stm,0ste,ref.V,I,grd.k0[3])
 @test P1≈1
 @test P2≈1
 end
