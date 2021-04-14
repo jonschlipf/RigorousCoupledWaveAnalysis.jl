@@ -133,7 +133,7 @@ lation)
 """
 function etm_amplitudes(ψin,m::RCWAModel,grd::RCWAGrid,λ,em,sup,sub)
     ro,to,r,t=etm_propagate(sup,sup,em,ψin,grd) #propagate wave
-	return cat([s],t,[to],dims=1),cat([ro],r,[0ro],dims=1) #put in order
+	return cat([ψin],t,[to],dims=1),cat([ro],r,[0ro],dims=1) #put in order
 end	
 function etm_amplitudes(ψin,m::RCWAModel,grd::RCWAGrid,λ)
 	ems=eigenmodes(grd,λ,m.layers) 	#layer eigenmodes
