@@ -111,21 +111,21 @@ Ate=-ftm[end]-Ttm #absorption in lowest layer
 ```
 ### Local fields
 
-Local electric and magnetic fields are obtainable via the propagating amplitudes as well:
+Local electric and magnetic (nly is an integer to select the layer in which the fields are desired) fields are obtainable via the propagating amplitudes as well:
 ```julia
-em=RigorousCoupledWaveAnalysis.eigenmodes(Grd,λ,ly)      #get the eigenmodes of propagation in the first layer (this is the nanohole array)
+em=RigorousCoupledWaveAnalysis.eigenmodes(Grd,λ,Mdl.layers[nly])      #get the eigenmodes of propagation in the first layer (this is the nanohole array)
 a,b=etm_amplitudes(ste,Mdl,Grd,λ) #get propagating wave amplitudes inside layer
 points=[100,100,10]               #set the number of points to compute in x,y,z
-E,H=RigorousCoupledWaveAnalysis.getfields(a[1],b[1],Mdl.layers[1].thickness,em,Grd,points,λ) #compute the electric and magnetic field
+E,H=RigorousCoupledWaveAnalysis.getfields(a[nly],b[nly],Mdl.layers[nly].thickness,em,Grd,points,λ) #compute the electric and magnetic field
 ```
 Or via scattering matrix algorithm:
 ```julia
 using LinearAlgebra
-em=RigorousCoupledWaveAnalysis.eigenmodes(Grd,λ,ly)        #get the eigenmodes of propagation in the first layer (this is the nanohole array)
+em=RigorousCoupledWaveAnalysis.eigenmodes(Grd,λ,Mdl.layers[nly])        #get the eigenmodes of propagation in the first layer (this is the nanohole array)
 a,b=srcwa_amplitudes(ste,Mdl,Grd,λ) #get propagating wave amplitudes outside layer
-ain,bout=slicehalf(.5*[em.W\I+em.V\Grd.V0 em.W\I-em.V\Grd.V0;em.W\I-em.V\Grd.V0 em.W\I+em.V\Grd.V0]*[a[:,1];b[:,1]]) #get propagating wave amplitudes inside layer
+ain,bout=slicehalf(.5*[em.W\I+em.V\Grd.V0 em.W\I-em.V\Grd.V0;em.W\I-em.V\Grd.V0 em.W\I+em.V\Grd.V0]*[a[:,nly];b[:,nly]]) #get propagating wave amplitudes inside layer
 points=[100,100,10]               #set the number of points to compute in x,y,z
-E,H=RigorousCoupledWaveAnalysis.getfields(a[1],b[1],Mdl.layers[1].thickness,em,Grd,points,λ) #compute the electric and magnetic field
+E,H=RigorousCoupledWaveAnalysis.getfields(ain,bout,Mdl.layers[nly].thickness,em,Grd,points,λ) #compute the electric and magnetic field
 ```
 
 
