@@ -128,11 +128,20 @@ points=[100,100,10]               #set the number of points to compute in x,y,z
 E,H=RigorousCoupledWaveAnalysis.getfields(ain,bout,Mdl.layers[nly].thickness,em,Grd,points,λ) #compute the electric and magnetic field
 ```
 
+## Mathematics
+
+The mathematical formulation and its full derivation from Maxwell's equations can be found in the supplemental material of this publication:
+
+J. Schlipf and I. A. Fischer, Rigorous coupled-wave analysis of a multi-layered plasmonic integrated refractive index sensor, Opt. Express 29, 36201-36210 (2021) 
+
+When using this package for an academic publication, please consider citing this publication.
 
 ## References
 
-D. M. Whittaker and I. S. Culshaw, Scattering-matrix treatment of patterned multilayer photonic structures, Phys. Rev. B60(1999), 2610–2618.1
+J. Schlipf and I. A. Fischer, Rigorous coupled-wave analysis of a multi-layered plasmonic integrated refractive index sensor, Opt. Express 29, 36201-36210 (2021) 
 
-Marco Liscidini, Dario Gerace, Lucio Claudio Andreani, and J. E. Sipe, Scattering-matrix analysis of periodically patterned multilayers with asymmetric unit cells and birefringent media,Phys. Rev. B77(2008), 035324.1
+D. M. Whittaker and I. S. Culshaw, Scattering-matrix treatment of patterned multilayer photonic structures, Phys. Rev. B60, 2610–2618 (1999)
 
-Raymond Rumpf, Improved formulation of scattering matrices for semi-analytical methods thatis consistent with convention, Progress In Electromagnetics Research B35(2011), 241–261.1
+Marco Liscidini, Dario Gerace, Lucio Claudio Andreani, and J. E. Sipe, Scattering-matrix analysis of periodically patterned multilayers with asymmetric unit cells and birefringent media, Phys. Rev. B77, 035324 (2008)
+
+Raymond Rumpf, Improved formulation of scattering matrices for semi-analytical methods thatis consistent with convention, Progress In Electromagnetics Research B35, 241–261 (2011)
