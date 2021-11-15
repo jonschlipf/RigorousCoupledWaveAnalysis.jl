@@ -138,10 +138,12 @@ When using this package for an academic publication, please consider citing this
 
 ## References
 
-J. Schlipf and I. A. Fischer, Rigorous coupled-wave analysis of a multi-layered plasmonic integrated refractive index sensor, Opt. Express 29, 36201-36210 (2021) 
+J. Schlipf and I. A. Fischer, "Rigorous coupled-wave analysis of a multi-layered plasmonic integrated refractive index sensor," Opt. Express 29, 36201-36210 (2021) 
 
-D. M. Whittaker and I. S. Culshaw, Scattering-matrix treatment of patterned multilayer photonic structures, Phys. Rev. B60, 2610–2618 (1999)
+D. M. Whittaker and I. S. Culshaw, "Scattering-matrix treatment of patterned multilayer photonic structures," Phys. Rev. B60, 2610–2618 (1999)
 
-Marco Liscidini, Dario Gerace, Lucio Claudio Andreani, and J. E. Sipe, Scattering-matrix analysis of periodically patterned multilayers with asymmetric unit cells and birefringent media, Phys. Rev. B77, 035324 (2008)
+Marco Liscidini, Dario Gerace, Lucio Claudio Andreani, and J. E. Sipe, "Scattering-matrix analysis of periodically patterned multilayers with asymmetric unit cells and birefringent media," Phys. Rev. B77, 035324 (2008)
 
-Raymond Rumpf, Improved formulation of scattering matrices for semi-analytical methods thatis consistent with convention, Progress In Electromagnetics Research B35, 241–261 (2011)
+M. G. Moharam and T. K. Gaylord, "Rigorous coupled-wave analysis of planar-grating diffraction," J. Opt. Soc. Am. 71, 811-818 (1981) 
+
+Raymond Rumpf, "Improved formulation of scattering matrices for semi-analytical methods thatis consistent with convention," Progress In Electromagnetics Research B35, 241–261 (2011)
