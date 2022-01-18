@@ -1,6 +1,6 @@
 module BasicMaterials
 
-export ge_nunley,si_schinke,sio2_malitson,zno_bond,al_rakic,si3n4_luke
+export ge_nunley,si_schinke,sio2_malitson,zno_bond,al_rakic,ag_rakic,au_rakic,ti_rakic,si3n4_luke
 
 using CSV,Interpolations,DataFrames
 include("rakic.jl")
