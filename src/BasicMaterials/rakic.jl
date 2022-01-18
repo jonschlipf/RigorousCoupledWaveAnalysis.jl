@@ -38,7 +38,7 @@ Au=Metal(9.030, 0.760,0.053, [
     Oscillator(0.071,0.870,2.969), 
     Oscillator(0.601,2.494,4.304), 
     Oscillator(4.384,2.214,13.320)])
-Ti=LorentzDrudeMetal(7.290,0.148,0.082, [
+Ti=Metal(7.290,0.148,0.082, [
     Oscillator(0.899,2.276,0.777), 
     Oscillator(0.393,2.518,1.545), 
     Oscillator(0.187,1.663,2.509), 
