@@ -10,7 +10,7 @@ ge_nunley_n=cat(ge_nunley_raw[:,1],ge_nunley_raw[:,2]+1im*ge_nunley_raw[:,3],dim
 ge_nunley=extrapolate(interpolate((1000ge_nunley_raw[:,1],),ge_nunley_n[:,2].^2,Gridded(Linear())),Flat())
 
 
-sio2_malitson_n(l)=sqrt(1+(0.6961663l^2)/(l^2-0.0684043^2)+(0.4079426l^2)/(l^2-0.1162414^2)+(0.8974794l^2)/(l^2-9.896161^2))
+sio2_malitson_n(l)=sqrt(Complex(1+(0.6961663l^2)/(l^2-0.0684043^2)+(0.4079426l^2)/(l^2-0.1162414^2)+(0.8974794l^2)/(l^2-9.896161^2)))
 sio2_malitson(l)=sio2_malitson_n(.001l)^2 .+0im
 #I. H. Malitson. Interspecimen comparison of the refractive index of fused silica, J. Opt. Soc. Am. 55, 1205-1208 (1965)
 
