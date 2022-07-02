@@ -1,7 +1,7 @@
 name = "RigorousCoupledWaveAnalysis"
 uuid = "c8f76c1c-e1da-11e9-2f58-db462fa08db6"
 authors = ["jonschlipf <schlipf.jon@gmx.net>"]
-version = "1.0.2"
+version = "1.0.1"
 
 [compat]
 CSV="0.8"
