@@ -103,15 +103,9 @@ function modes_freespace(Kx::Diagonal{Complex{ftype},Array{Complex{ftype},1}},Ky
     Q0=[Kx*Ky I-Kx*Kx;Ky*Ky-I -Ky*Kx]
     #propagation
 
-
     q0=Diagonal(Matrix([1im*Kz0 0I;0I 1im*Kz0]))
 
     #Free space, so W is identity
-    try 
-        Q0/q0
-    catch SingularException
-        throw(error("A singular exception occured, since q0 can not be inverted as it contains elements that equal zero. This is likely due to the z-component of the momentum being zero for some reciprocal lattice vectors. A likely solution is to slightly vary the size of the unit cell (e.g. 700.000001 nm instead of 700 nm)."))
-    end
     V0=Q0/q0
     return V0,Kz0
 end
@@ -131,9 +125,6 @@ Create a reciprocal space grid for RCWA simulation
 * `grd`: RCWA grid struct
 """
 function rcwagrid(Nx::Int64,Ny::Int64,px::Real,py::Real,θ::Real,α::Real,λ::Real,sup)
-    if θ==0
-        @warn "The incident angle θ is set to zero, which will result in a division by zero, and thus an invalid result. For vertical incidence simulation, consider a value close to zero, e.g. 1e-5."
-    end
     nx,ny,dnx,dny=ngrid(Nx,Ny)
     Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ,sup)
     V0,Kz0=modes_freespace(Kx,Ky)

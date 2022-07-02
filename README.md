@@ -146,4 +146,4 @@ Marco Liscidini, Dario Gerace, Lucio Claudio Andreani, and J. E. Sipe, "Scatteri
 
 M. G. Moharam and T. K. Gaylord, "Rigorous coupled-wave analysis of planar-grating diffraction," J. Opt. Soc. Am. 71, 811-818 (1981) 
 
-Raymond Rumpf, "Improved formulation of scattering matrices for semi-analytical methods that is consistent with convention," Progress In Electromagnetics Research B35, 241–261 (2011)
+Raymond Rumpf, "Improved formulation of scattering matrices for semi-analytical methods thatis consistent with convention," Progress In Electromagnetics Research B35, 241–261 (2011)
