@@ -325,47 +325,57 @@ function a2e(a,W,Kx,Ky,Kz)
 end
 
 """
-    getfields(ain,bout,thi,em::Eigenmodes,grd::RCWAGrid,sz,λ)
+    getfields(ain,bout,em::Eigenmodes,grd::RCWAGrid,xypoints,zpoints,λ,window,padding)
 
 computes the electric and magnetic fields within a layer
 # Arguments
 * `ain` : amplitude vector entering the layer from the previous layer
 * `bout` : amplitude vector leaving the layer towards the previous layer
-* `thi` : thickness of the layer
 * `em` : eigenmodes of the layer
 * `grd` : reciprocal space grid object
-* `sz` : three-element vector specifying the number of points in x, y, and z for which the fields are to be computed
+* `xypoints` : two-element vector specifying the number of points in x, y, and z for which the fields are to be computed
+* `zpoints` : array of desired z-axis points relative to the top interface of the layer
 * `λ` : wavelength
+* `window` : type of Window to use against Gibbs' phenomenon, available: Hann (default), None
+* `padding` : padding of the window in x and y, default is [0,0], not yet implemented
 # Outputs
 * `efield` : 4D tensor for the electric field (dimensions are x, y, z, and the component (E_x or E_y or E_z)
 * `hfield` : 4D tensor for the magnetic field (dimensions are x, y, z, and the component (E_x or E_y or E_z)
 """
-function getfields(ain,bout,thi,em,grd,sz,λ)
-	#create the x and y components of the real-space rectilinear grid
-    x=[r  for r in -sz[1]/2+.5:sz[1]/2-.5, c in -sz[2]/2+.5:sz[2]/2-.5]/sz[1]
-    y=[c  for r in -sz[1]/2+.5:sz[1]/2-.5, c in -sz[2]/2+.5:sz[2]/2-.5]/sz[2]
+function getfields(ain,bout,em::Eigenmodes,grd::RCWAGrid,xypoints,zpoints,λ,window="Hann",padding=[0,0])
+    Nx=Int(round(xypoints[1]/2))
+    Ny=Int(round(xypoints[2]/2))
+    nx=[r for r in -Nx:Nx-1, c in -Ny:Ny-1]
+    ny=[c for r in -Nx:Nx-1, c in -Ny:Ny-1]
+
 	#initialize the fields
-    efield=zeros(size(x,1),size(y,2),sz[3],3)*1im
-    hfield=zeros(size(x,1),size(y,2),sz[3],3)*1im
+    efield=zeros(xypoints[1],xypoints[2],length(zpoints),3)*1im
+    hfield=zeros(xypoints[1],xypoints[2],length(zpoints),3)*1im
+    if window=="Hann"
+        windowfunction=(cos.(pi.*nx/Nx/2).*cos.(pi.*ny/Ny/2)).*(cos.(pi.*nx/Nx/2).*cos.(pi.*ny/Ny/2))
+    else
+        windowfunction=0*nx.+1
+    end
     #loop through z constants
-	for zind=1:sz[3]
+	for zind in eachindex(zpoints)
         #propagation of the waves
-        a=exp(Matrix(em.q*2π/λ*thi*(zind-1)/sz[3]))*ain
-        b=exp(-Matrix(em.q*2π/λ*thi*(zind-1)/sz[3]))*bout
+        a=exp( Matrix(em.q*2π/λ*zpoints[zind]))*ain
+        b=exp(-Matrix(em.q*2π/λ*zpoints[zind]))*bout
         #convert amplitude vectors to electric fields
         ex,ey,ez=a2e(a+b,em.W,grd.Kx,grd.Ky,grd.Kz0)
         hx,hy,hz=a2e(a-b,em.V,grd.Kx,grd.Ky,grd.Kz0)
         #convert from reciprocal lattice vectors to real space distribution
-        efield[:,:,zind,1]=recipvec2real(grd.nx,grd.ny,ex,x,y)
-        efield[:,:,zind,2]=recipvec2real(grd.nx,grd.ny,ey,x,y)
-        efield[:,:,zind,3]=recipvec2real(grd.nx,grd.ny,ez,x,y)
+        efield[:,:,zind,1]=recipvec2real(grd.nx,grd.ny,ex,nx,ny,windowfunction)
+        efield[:,:,zind,2]=recipvec2real(grd.nx,grd.ny,ey,nx,ny,windowfunction)
+        efield[:,:,zind,3]=recipvec2real(grd.nx,grd.ny,ez,nx,ny,windowfunction)
 
-        hfield[:,:,zind,1]=recipvec2real(grd.nx,grd.ny,hx,x,y)
-        hfield[:,:,zind,2]=recipvec2real(grd.nx,grd.ny,hy,x,y)
-        hfield[:,:,zind,3]=recipvec2real(grd.nx,grd.ny,hz,x,y)
+        hfield[:,:,zind,1]=recipvec2real(grd.nx,grd.ny,hx,nx,ny,windowfunction)
+        hfield[:,:,zind,2]=recipvec2real(grd.nx,grd.ny,hy,nx,ny,windowfunction)
+        hfield[:,:,zind,3]=recipvec2real(grd.nx,grd.ny,hz,nx,ny,windowfunction)
     end
     return efield,hfield
 end
+
 
 
 end  # module  eigenmodes
