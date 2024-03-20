@@ -32,7 +32,7 @@ T_H2O=zeros(size(wls)) #array for transmission
 R_CH3COOH=zeros(size(wls))
 T_CH3COOH=zeros(size(wls))
 A_CH3COOH=zeros(size(wls))
-for i=1:length(wls)
+for i in eachindex(wls)
     λ=wls[i] #get wavelength from array
     grd=rcwagrid(N,N,p,p,1E-5,0,λ,ConstantPerm(n_H2O^2)) #reciprocal space grid
 	ste,stm=rcwasource(grd) #te and tm source amplitudes

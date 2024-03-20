@@ -94,21 +94,20 @@ end
 
 Converts a reciprocal space amplitude vector into a 2D real space map.
 # Arguments
-* `nx` : reciprocal space grid in x
-* `ny` : reciprocal space grid in y
+* `nxold` : reciprocal space grid in x
+* `nyold` : reciprocal space grid in y
 * `F`: reciprocal space amplitude vector
-* `x`: x coordinates of desired points
-* `y`: y coordinates of desired points
+* `nx`: x coordinates of full grid
+* `ny`: y coordinates of full grid
+* `windowfunction`: function values of window function
 # Output
 * `f` : 2D real space map
 """
-function recipvec2real(nx,ny,F,x,y)
-    f=zeros(size(x))*1im
-    for i=1:size(x,1)
-        for j=1:size(y,2)
-			#this is a manual and awful FT, should be replaced by FFTW
-            f[i,j]=sum(F.*exp.(1im*x[i,j]*nx*2*pi+1im*y[i,j]*ny*2*pi))
-        end
+function recipvec2real(nxold,nyold,F,nx,ny,windowfunction)
+    F1=zeros(size(nx))*1im
+    for index in eachindex(nxold)
+        F1[(nx.==nxold[index]).&(ny.==nyold[index])].=F[index]
     end
+    f=fftshift(ifft(ifftshift(F1.*windowfunction))*length(F1))
     return f
 end

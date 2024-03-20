@@ -2,7 +2,7 @@
 module ETM
 using LinearAlgebra
 using ..Common
-export etm_reftra,etm_amplitudes,etm_propagate,etm_flow,etm_reftra_flows
+export etm_reftra,etm_amplitudes,etm_propagate,etm_flow,etm_reftra_flows,etm_getfields_stack
 #utility method for dealing with eigenmodes
 function F(em)
     return Matrix([em.W em.W;em.V -em.V])
@@ -132,7 +132,7 @@ lation)
 * `b` : amplitude vectors of backward waves
 """
 function etm_amplitudes(ψin,m::RCWAModel,grd::RCWAGrid,λ,em,sup,sub)
-    ro,to,r,t=etm_propagate(sup,sup,em,ψin,grd) #propagate wave
+    ro,to,r,t=etm_propagate(sup,sub,em,ψin,grd) #propagate wave
 	return cat([ψin],t,[to],dims=1),cat([ro],r,[0ro],dims=1) #put in order
 end	
 function etm_amplitudes(ψin,m::RCWAModel,grd::RCWAGrid,λ)
@@ -157,6 +157,48 @@ function etm_flow(a,b,em,kz0)
 	ex,ey=a2e2d(a+b,em.W) #electric field
 	hx,hy=a2e2d(a-b,em.V) #magnetic field
 	return imag(sum(ex.*conj.(hy)-ey.*conj.(hx)))/kz0 #poynting vector z coordinate
+end
+"""
+    etm_getfields_stack(mdl,grd::RCWAGrid,xypoints,zpoints,λ,a,b,em::Eigenmodes,window,padding)
+
+computes the electric and magnetic fields within the whole stack
+# Arguments
+* `mdl` : RCWA model object
+* `grd` : reciprocal space grid object
+* `xypoints` : two-element vector specifying the number of points in x, y, and z for which the fields are to be computed
+* `zpoints` : array of desired z-axis points relative to the top interface of the layer
+* `λ` : wavelength
+* `a` : forward amplitude vectors
+* `b` : backward amplitude vectors
+* `em` : eigenmodes of the layer
+* `window` : type of Window to use against Gibbs' phenomenon, available: Hann (default), None
+* `padding` : padding of the window in x and y, default is [0,0]
+# Outputs
+* `efield` : 4D tensor for the electric field (dimensions are x, y, z, and the component (E_x or E_y or E_z)
+* `hfield` : 4D tensor for the magnetic field (dimensions are x, y, z, and the component (E_x or E_y or E_z)
+"""
+function etm_getfields_stack(mdl::RCWAModel,grd::RCWAGrid,xypoints,zpoints,λ,a,b,em::Array{Eigenmodes,1},window="Hann",padding=[0,0])
+    zstack=0
+    zind=1
+    E=zeros(xypoints[1],xypoints[2],length(zpoints),3)*1im
+    H=zeros(xypoints[1],xypoints[2],length(zpoints),3)*1im
+    for i in eachindex(mdl.layers)
+        zpoints_separated=zpoints[zstack.<=zpoints.<zstack+mdl.layers[i].thickness]
+        Ei,Hi=getfields(a[i],b[i],em[i],grd,xypoints,zpoints_separated.-zstack,λ,window,padding)
+        E[:,:,zind:zind+length(zpoints_separated)-1,:]=Ei
+        H[:,:,zind:zind+length(zpoints_separated)-1,:]=Hi
+        zstack=zstack+mdl.layers[i].thickness
+        zind=zind+length(zpoints_separated)
+    end
+    return E,H
+end
+function etm_getfields_stack(mdl::RCWAModel,grd::RCWAGrid,xypoints,zpoints,λ,source,window="Hann",padding=[0,0])
+    em=eigenmodes(grd,λ,mdl.layers)
+    ref=halfspace(grd.Kx,grd.Ky,mdl.εsup,λ)
+    tra=halfspace(grd.Kx,grd.Ky,mdl.εsub,λ)
+    b0,a0,b,a=etm_propagate(ref,tra,em,source,grd)
+    E,H=etm_getfields_stack(mdl,grd,xypoints,zpoints,λ,a,b,em,window,padding)
+    return E,H
 end
 
 end

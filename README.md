@@ -113,19 +113,29 @@ Ate=-ftm[end]-Ttm #absorption in lowest layer
 
 Local electric and magnetic (nly is an integer to select the layer in which the fields are desired) fields are obtainable via the propagating amplitudes as well:
 ```julia
+nly=1 #select layer
 em=RigorousCoupledWaveAnalysis.eigenmodes(Grd,λ,Mdl.layers[nly])      #get the eigenmodes of propagation in the first layer (this is the nanohole array)
 a,b=etm_amplitudes(ste,Mdl,Grd,λ) #get propagating wave amplitudes inside layer
-points=[100,100,10]               #set the number of points to compute in x,y,z
-E,H=RigorousCoupledWaveAnalysis.getfields(a[nly],b[nly],Mdl.layers[nly].thickness,em,Grd,points,λ) #compute the electric and magnetic field
+xypoints=[100,100]    #set the number of points to compute in x,y
+zpoints=0:5:100              #set desired points on z-axis
+E,H=RigorousCoupledWaveAnalysis.getfields(a[nly+1],b[nly+1],em,Grd,xypoints,zpoints,λ) #compute the electric and 
+```
+Or integrated method for whole stack:
+```julia
+xypoints=[100,100]    #set the number of points to compute in x,y
+zpoints=0:5:500              #set desired points on z-axis
+E,H=etm_getfields_stack(mdl,grd,xypoints,zpoints,λ,ste) #compute the electric and magnetic field
 ```
 Or via scattering matrix algorithm:
 ```julia
 using LinearAlgebra
+nly=1 #select layer
 em=RigorousCoupledWaveAnalysis.eigenmodes(Grd,λ,Mdl.layers[nly])        #get the eigenmodes of propagation in the first layer (this is the nanohole array)
 a,b=srcwa_amplitudes(ste,Mdl,Grd,λ) #get propagating wave amplitudes outside layer
-ain,bout=slicehalf(.5*[em.W\I+em.V\Grd.V0 em.W\I-em.V\Grd.V0;em.W\I-em.V\Grd.V0 em.W\I+em.V\Grd.V0]*[a[:,nly];b[:,nly]]) #get propagating wave amplitudes inside layer
-points=[100,100,10]               #set the number of points to compute in x,y,z
-E,H=RigorousCoupledWaveAnalysis.getfields(ain,bout,Mdl.layers[nly].thickness,em,Grd,points,λ) #compute the electric and magnetic field
+ain,bout=slicehalf(.5*[em.W\I+em.V\Grd.V0 em.W\I-em.V\Grd.V0;em.W\I-em.V\Grd.V0 em.W\I+em.V\Grd.V0]*[a[:,nly+1];b[:,nly+1]]) #get propagating wave amplitudes inside layer
+xypoints=[100,100]    #set the number of points to compute in x,y
+zpoints=0:5:100              #set desired points on z-axis
+E,H=RigorousCoupledWaveAnalysis.getfields(ain,bout,em,Grd,xypoints,zpoints,λ) #compute the electric and magnetic field
 ```
 
 ## Mathematics
