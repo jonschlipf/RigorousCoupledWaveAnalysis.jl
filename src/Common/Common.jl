@@ -333,7 +333,7 @@ computes the electric and magnetic fields within a layer
 * `bout` : amplitude vector leaving the layer towards the previous layer
 * `em` : eigenmodes of the layer
 * `grd` : reciprocal space grid object
-* `xypoints` : two-element vector specifying the number of points in x, y, and z for which the fields are to be computed
+* `xypoints` : two-element vector specifying the number of points in x, y for which the fields are to be computed, better even numbers, otherwise truncated to even
 * `zpoints` : array of desired z-axis points relative to the top interface of the layer
 * `λ` : wavelength
 * `window` : type of Window to use against Gibbs' phenomenon, available: Hann (default), None
@@ -349,8 +349,8 @@ function getfields(ain,bout,em::Eigenmodes,grd::RCWAGrid,xypoints,zpoints,λ,win
     ny=[c for r in -Nx:Nx-1, c in -Ny:Ny-1]
 
 	#initialize the fields
-    efield=zeros(xypoints[1],xypoints[2],length(zpoints),3)*1im
-    hfield=zeros(xypoints[1],xypoints[2],length(zpoints),3)*1im
+    efield=zeros(2*Nx,2*Ny,length(zpoints),3)*1im
+    hfield=zeros(2*Nx,2*Ny,length(zpoints),3)*1im
     if window=="Hann"
         windowfunction=(cos.(pi.*nx/Nx/2).*cos.(pi.*ny/Ny/2)).*(cos.(pi.*nx/Nx/2).*cos.(pi.*ny/Ny/2))
     else
