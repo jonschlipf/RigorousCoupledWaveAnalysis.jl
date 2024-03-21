@@ -343,8 +343,8 @@ computes the electric and magnetic fields within a layer
 * `hfield` : 4D tensor for the magnetic field (dimensions are x, y, z, and the component (E_x or E_y or E_z)
 """
 function getfields(ain,bout,em::Eigenmodes,grd::RCWAGrid,xypoints,zpoints,λ,window="Hann",padding=[0,0])
-    Nx=Int(round(xypoints[1]/2))
-    Ny=Int(round(xypoints[2]/2))
+    Nx=Int(floor(xypoints[1]/2))
+    Ny=Int(floor(xypoints[2]/2))
     nx=[r for r in -Nx:Nx-1, c in -Ny:Ny-1]
     ny=[c for r in -Nx:Nx-1, c in -Ny:Ny-1]
 
