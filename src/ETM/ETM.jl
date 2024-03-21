@@ -165,7 +165,11 @@ computes the electric and magnetic fields within the whole stack
 # Arguments
 * `mdl` : RCWA model object
 * `grd` : reciprocal space grid object
+<<<<<<< HEAD
 * `xypoints` : two-element vector specifying the number of points in x, y, and z for which the fields are to be computed
+=======
+* `xypoints` : two-element vector specifying the number of points in x, y for which the fields are to be computed (must be even, otherwise truncated)
+>>>>>>> 6d4ebab (xypoints fix)
 * `zpoints` : array of desired z-axis points relative to the top interface of the layer
 * `λ` : wavelength
 * `a` : forward amplitude vectors
@@ -180,6 +184,10 @@ computes the electric and magnetic fields within the whole stack
 function etm_getfields_stack(mdl::RCWAModel,grd::RCWAGrid,xypoints,zpoints,λ,a,b,em::Array{Eigenmodes,1},window="Hann",padding=[0,0])
     zstack=0
     zind=1
+<<<<<<< HEAD
+=======
+    xypoints=2*Int.(floor.(xypoints./2))
+>>>>>>> 6d4ebab (xypoints fix)
     E=zeros(xypoints[1],xypoints[2],length(zpoints),3)*1im
     H=zeros(xypoints[1],xypoints[2],length(zpoints),3)*1im
     for i in eachindex(mdl.layers)
