@@ -97,15 +97,16 @@ Computes the eigenmodes of propagation through free space, for normalization
 * `Kz0`: z-axis component of the propagation vector in free space
 """
 function modes_freespace(Kx::Diagonal{<:Number, <:DenseVector{<:Number}},Ky::Diagonal{<:Number, <:DenseVector{<:Number}})
+    IM=Diagonal(Kx*0 .+1)
     #just because |k|=1
-    Kz0=sqrt.(Complex.(I-Kx*Kx-Ky*Ky))
+    Kz0=sqrt.(Complex.(IM-Kx*Kx-Ky*Ky))
 	Kz0[imag.(Kz0).<0].*=-1
 
     #P0 is identity
-    Q0=[Kx*Ky I-Kx*Kx;Ky*Ky-I -Ky*Kx]
+    Q0=[Kx*Ky IM-Kx*Kx;Ky*Ky-IM -Ky*Kx]
     #propagation
 
-    q0=Diagonal(Matrix([1im*Kz0 0I;0I 1im*Kz0]))
+    q0=Diagonal([1im*Kz0 0I;0I 1im*Kz0])
 
     #Free space, so W is identity
     V0=Q0/q0

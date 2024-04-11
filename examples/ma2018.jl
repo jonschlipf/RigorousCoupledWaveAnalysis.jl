@@ -13,8 +13,8 @@ ox=ModelPerm(RigorousCoupledWaveAnalysis.sio2_malitson) #SiO2 from dispersion fo
 air=ConstantPerm(1.0) #superstrate material is air
 
 #parameters of structure and kgrid
-N=10 #accuracy
-wls=1300:50:2000.0 #wavelength axis
+N=6 #accuracy
+wls=1300:5:2000.0 #wavelength axis
 a=900.0 #cell size
 lmid=615/a #length of main arm
 larm=410/a #length of side arms
@@ -38,7 +38,6 @@ Rlf=zeros(length(wls)) #Forward lcp reflectivity
 Tlf=zeros(length(wls)) #Forward lcp transmissivity
 @time for i in eachindex(wls) #iterate over all wavelengths
     λ=wls[i] #get wavelength from array
-    println(λ)
     grd=rcwagrid(N,N,a,a,1E-5,0,λ,air,use_cuda) #build a reciprocal space grid
     ste,stm=rcwasource(grd,1) #define source
     Rlf[i],Tlf[i]=etm_reftra(sqrt(.5)*(stm+1im*ste),mdl,grd,λ) #lcp propagation
@@ -62,7 +61,6 @@ Rlb=zeros(length(wls))#Backward lcp reflectivity
 Tlb=zeros(length(wls))#Backward lcp transmissivity
 @time for i in eachindex(wls)
     λ=wls[i]
-    println(λ)
     grd=rcwagrid(N,N,a,a,1E-5,0,λ,air)
     ste,stm=rcwasource(grd,1)
     Rlb[i],Tlb[i]=etm_reftra(sqrt(.5)*(stm+1im*ste),mdl,grd,λ)
