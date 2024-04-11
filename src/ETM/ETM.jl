@@ -5,7 +5,7 @@ using ..Common
 export etm_reftra,etm_amplitudes,etm_propagate,etm_flow,etm_reftra_flows,etm_getfields_stack
 #utility method for dealing with eigenmodes
 function F(em)
-    return Matrix([em.W em.W;em.V -em.V])
+    return [em.W em.W;em.V -em.V]
 end
 """
     etm_propagate(sup,sub,em,ψin,grd)
@@ -25,28 +25,31 @@ The propagation of waves according to the ETM method
 * `ψm` : array of internal forward propagating wave vectors in each layer
 """
 function etm_propagate(sup,sub,em,ψin,grd,get_r=true)
-    ψm=Array{Array{Complex{Float64},1},1}(undef,length(em)) #preallocate
-    ψp=Array{Array{Complex{Float64},1},1}(undef,length(em)) 
-if length(em)>0
-    #backward iteration
-    a=Array{Array{Complex{Float64},2},1}(undef,length(em)) #preallocate
-    b=Array{Array{Complex{Float64},2},1}(undef,length(em))
-    a[end],b[end]=slicehalf(F(em[end])\Matrix([I;-sub.V])) #transmission matrix for a wave in the last layer into the substrate
-    for cnt=length(em):-1:2
-        a[cnt-1],b[cnt-1]=slicehalf(F(em[cnt-1])\F(em[cnt])*[em[cnt].X*(a[cnt]/b[cnt])*em[cnt].X ;I]) #successively compute the transmission matrix from the i-th layer into the substrate
-    end
+    #weird workaround to build approprialtely sized identity matrix that works with CUDA
+    IMa=Diagonal(grd.nx*0 .+1)
+    IM=[IMa 0*IMa;0*IMa IMa]
+    ψm=Array{AbstractArray,1}(undef,length(em)) #preallocate
+    ψp=Array{AbstractArray,1}(undef,length(em)) 
+    if length(em)>0
+        #backward iteration
+        a=Array{AbstractArray,1}(undef,length(em)) #preallocate
+        b=Array{AbstractArray,1}(undef,length(em))
+        a[end],b[end]=slicehalf(F(em[end])\Matrix([IM;-sub.V])) #transmission matrix for a wave in the last layer into the substrate
+        for cnt=length(em):-1:2
+            a[cnt-1],b[cnt-1]=slicehalf(F(em[cnt-1])\F(em[cnt])*[em[cnt].X*(a[cnt]/b[cnt])*em[cnt].X ;IM]) #successively compute the transmission matrix from the i-th layer into the substrate
+        end
 	#forward iteration
-    ψref,ψm1=slicehalf(-cat([I;sup.V],F(em[1])*[em[1].X*(a[1]/b[1])*em[1].X;I],dims=2)\([I;-sup.V]*ψin)) #compute the reflected wave and the forward wave in the first layer
+    ψref,ψm1=slicehalf(-cat([IM;sup.V],F(em[1])*[em[1].X*(a[1]/b[1])*em[1].X;IM],dims=2)\([IM;-sup.V]*ψin)) #compute the reflected wave and the forward wave in the first layer
     ψm[1]=vec(ψm1) 
     for cnt=1:length(em)-1
-        ψm[cnt+1]=b[cnt]\I*(em[cnt].X*ψm[cnt]) #successively compute the forward wave in the i-th layer
+        ψm[cnt+1]=b[cnt]\(em[cnt].X*ψm[cnt]) #successively compute the forward wave in the i-th layer
 		get_r&&(ψp[cnt]=em[cnt].X*a[cnt]*ψm[cnt+1]) #if required, compute the backward wave in the i-th layer
     end
 	get_r&&(ψp[1]=em[1].X*(a[1]/b[1])*em[1].X*ψm[1]) #if required, computethe backward wave in the first layer
-    ψtra=b[end]\I*em[end].X*ψm[end] #compute the transmitted wave from the forward wave in the last layer
+    ψtra=b[end]\em[end].X*ψm[end] #compute the transmitted wave from the forward wave in the last layer
 	get_r&&(ψp[end]=em[end].X*a[end]*ψtra) #compute the backward wave in the last layer, if required
 	else
-	ψref,ψtra=slicehalf([-I I;sup.V sub.V]\[I*ψin;sup.V*ψin]) #the case for "empty" model (single interface, no layers)
+	ψref,ψtra=slicehalf([-IM IM;sup.V sub.V]\[ψin;sup.V*ψin]) #the case for "empty" model (single interface, no layers)
 	end
     return ψref,ψtra,ψp,ψm
 end

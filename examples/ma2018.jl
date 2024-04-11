@@ -13,13 +13,13 @@ ox=ModelPerm(RigorousCoupledWaveAnalysis.sio2_malitson) #SiO2 from dispersion fo
 air=ConstantPerm(1.0) #superstrate material is air
 
 #parameters of structure and kgrid
-N=4 #accuracy
-wls=1300:5:2000.0 #wavelength axis
+N=10 #accuracy
+wls=1300:50:2000.0 #wavelength axis
 a=900.0 #cell size
 lmid=615/a #length of main arm
 larm=410/a #length of side arms
 w=205/a #width of arms
-
+use_cuda=true
 
 function zshapegeo(lmid,larm,w) #parametrized z-shaped unit cell
     cent=Rectangle(w,lmid) #center arm
@@ -36,9 +36,10 @@ Rrf=zeros(length(wls)) #Forward rcp reflectivity
 Trf=zeros(length(wls)) #Forward rcp transmissivity
 Rlf=zeros(length(wls)) #Forward lcp reflectivity
 Tlf=zeros(length(wls)) #Forward lcp transmissivity
-for i=in eachindex(wls) #iterate over all wavelengths
+@time for i in eachindex(wls) #iterate over all wavelengths
     λ=wls[i] #get wavelength from array
-    grd=rcwagrid(N,N,a,a,1E-5,0,λ,air) #build a reciprocal space grid
+    println(λ)
+    grd=rcwagrid(N,N,a,a,1E-5,0,λ,air,use_cuda) #build a reciprocal space grid
     ste,stm=rcwasource(grd,1) #define source
     Rlf[i],Tlf[i]=etm_reftra(sqrt(.5)*(stm+1im*ste),mdl,grd,λ) #lcp propagation
     Rrf[i],Trf[i]=etm_reftra(sqrt(.5)*(1im*stm+ste),mdl,grd,λ) #rcp propagation
@@ -59,7 +60,7 @@ Rrb=zeros(length(wls))#Backward rcp reflectivity
 Trb=zeros(length(wls))#Backward rcp transmissivity
 Rlb=zeros(length(wls))#Backward lcp reflectivity
 Tlb=zeros(length(wls))#Backward lcp transmissivity
-for i=in eachindex(wls)
+@time for i in eachindex(wls)
     λ=wls[i]
     println(λ)
     grd=rcwagrid(N,N,a,a,1E-5,0,λ,air)
