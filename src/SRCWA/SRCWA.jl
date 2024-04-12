@@ -34,8 +34,8 @@ function srcwa_reftra(ψin,model::RCWAModel,grd::RCWAGrid,λ)
     end
     S=concatenate(S,scattermatrix_tra(tra,grd.V0))
 	kzin=grd.k0[3] # impinging wave vector z component
-	R=a2p(0ψin,S.S11*ψin,ref.V,I,kzin) # get reflected power from reflected amplitude vector
-	T=-a2p(S.S21*ψin,0ψin,tra.V,I,kzin) # get transmitted power form transmitted amplitude vector
+    R=a2p(0ψin,S.S11*ψin,ref.V,I,kzin) # get reflected power from reflected amplitude vector
+    T=-a2p(S.S21*ψin,0ψin,tra.V,I,kzin) # get transmitted power form transmitted amplitude vector
     return R,T
 end
 function srcwa_reftra(ψin,εsup,εsub,S,grd::RCWAGrid,λ)

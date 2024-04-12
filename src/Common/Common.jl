@@ -362,19 +362,19 @@ function getfields(ain,bout,em::Eigenmodes,grd::RCWAGrid,xypoints,zpoints,λ,win
     #loop through z constants
 	for zind in eachindex(zpoints)
         #propagation of the waves
-        a=exp( Matrix(em.q*2π/λ*zpoints[zind]))*ain
-        b=exp(-Matrix(em.q*2π/λ*zpoints[zind]))*bout
+        a=exp( (em.q*2π/λ*zpoints[zind]))*ain
+        b=exp(-(em.q*2π/λ*zpoints[zind]))*bout
         #convert amplitude vectors to electric fields
         ex,ey,ez=a2e(a+b,em.W,grd.Kx,grd.Ky,grd.Kz0)
         hx,hy,hz=a2e(a-b,em.V,grd.Kx,grd.Ky,grd.Kz0)
         #convert from reciprocal lattice vectors to real space distribution
-        efield[:,:,zind,1]=recipvec2real(grd.nx,grd.ny,ex,nx,ny,windowfunction)
-        efield[:,:,zind,2]=recipvec2real(grd.nx,grd.ny,ey,nx,ny,windowfunction)
-        efield[:,:,zind,3]=recipvec2real(grd.nx,grd.ny,ez,nx,ny,windowfunction)
+        efield[:,:,zind,1]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(ex),nx,ny,windowfunction)
+        efield[:,:,zind,2]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(ey),nx,ny,windowfunction)
+        efield[:,:,zind,3]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(ez),nx,ny,windowfunction)
 
-        hfield[:,:,zind,1]=recipvec2real(grd.nx,grd.ny,hx,nx,ny,windowfunction)
-        hfield[:,:,zind,2]=recipvec2real(grd.nx,grd.ny,hy,nx,ny,windowfunction)
-        hfield[:,:,zind,3]=recipvec2real(grd.nx,grd.ny,hz,nx,ny,windowfunction)
+        hfield[:,:,zind,1]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(hx),nx,ny,windowfunction)
+        hfield[:,:,zind,2]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(hy),nx,ny,windowfunction)
+        hfield[:,:,zind,3]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(hz),nx,ny,windowfunction)
     end
     return efield,hfield
 end

@@ -13,10 +13,10 @@ Structure to store the scattering matrix of a layer or halfspace
 * `S22` : reflection matrix of port 2
 """
 struct ScatterMatrix
-    S11::Array{Complex{Float64},2}
-    S12::Array{Complex{Float64},2}
-    S21::Array{Complex{Float64},2}
-    S22::Array{Complex{Float64},2}
+    S11::AbstractArray{<:Number,2}
+    S12::AbstractArray{<:Number,2}
+    S21::AbstractArray{<:Number,2}
+    S22::AbstractArray{<:Number,2}
 end
 """
     scatMatrices(m::RCWAModel,g::RCWAGrid,λ)
@@ -47,14 +47,14 @@ Computes the scattering matrix of the superstrate halfspace
 * `S` : scattering matrix
 """
 function scattermatrix_ref(sup::Halfspace,V0)
-	A=I+V0\Matrix(sup.V) #boundary conditions, W=W0=I
-    B=I-V0\Matrix(sup.V)
-    Ai=I/Matrix(A) #precompute inverse for speed
-	S11=-Ai*B
-   	S12=2*Ai
-   	S21=.5*(A-B*Ai*B)
-   	S22=B*Ai
-	return ScatterMatrix(S11,S12,S21,S22)
+    A=I+V0\sup.V #boundary conditions, W=W0=I
+    B=I-V0\sup.V
+    Ai=I/A #precompute inverse for speed
+    S11=-Ai*B
+    S12=2*Ai
+    S21=.5*(A-B*Ai*B)
+    S22=B*Ai
+    return ScatterMatrix(S11,S12,S21,S22)
 end
 """
     scattermatrix_tra(sub::Halfspace,V0)
@@ -66,9 +66,9 @@ Computes the scattering matrix of the substrate halfspace
 * `S` : scattering matrix
 """
 function scattermatrix_tra(sub::Halfspace,V0)
-    A=I+V0\Matrix(sub.V) #boundary conditions, W=W0=I
-    B=I-V0\Matrix(sub.V)
-    Ai=I/Matrix(A) #precompute inverse of A for speed
+    A=I+V0\sub.V #boundary conditions, W=W0=I
+    B=I-V0\sub.V
+    Ai=I/A #precompute inverse of A for speed
     S11=B*Ai
     S12=.5*(A-B*Ai*B)
     S21=2*Ai
@@ -85,10 +85,10 @@ Computes the scattering matrix of a layer
 * `S` : scattering matrix
 """
 function scattermatrix_layer(e::Eigenmodes,V0)
-    A=Matrix(e.W)\I+(Matrix(e.V)\I)*V0 #boundary conditions, W0=I
-    B=Matrix(e.W)\I-(Matrix(e.V)\I)*V0
-    Ai=I/Matrix(A) #precompute inverse of A for speed
-    common=(A-e.X*B*Ai*e.X*B)\I #precompute this part for speed
+    A=e.W\I+e.V\V0 #boundary conditions, W0=I
+    B=e.W\I-e.V\V0
+    Ai=inv(A) #precompute inverse of A for speed
+    common=inv(A-e.X*B*Ai*e.X*B) #precompute this part for speed
     S11=S22=common*(e.X*B*Ai*e.X*A-B)
     S12=S21=common*e.X*(A-B*Ai*B)
     return ScatterMatrix(S11,S12,S21,S22)
