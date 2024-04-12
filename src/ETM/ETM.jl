@@ -34,7 +34,7 @@ function etm_propagate(sup,sub,em,ψin,grd,get_r=true)
         #backward iteration
         a=Array{AbstractArray,1}(undef,length(em)) #preallocate
         b=Array{AbstractArray,1}(undef,length(em))
-        a[end],b[end]=slicehalf(F(em[end])\Matrix([IM;-sub.V])) #transmission matrix for a wave in the last layer into the substrate
+        a[end],b[end]=slicehalf(F(em[end])\[IM;-sub.V]) #transmission matrix for a wave in the last layer into the substrate
         for cnt=length(em):-1:2
             a[cnt-1],b[cnt-1]=slicehalf(F(em[cnt-1])\F(em[cnt])*[em[cnt].X*(a[cnt]/b[cnt])*em[cnt].X ;IM]) #successively compute the transmission matrix from the i-th layer into the substrate
         end

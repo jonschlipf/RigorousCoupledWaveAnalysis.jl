@@ -13,7 +13,7 @@ n_H2O=1.321
 n_CH3COOH=1.353 #Constant refractive indices
 Al=ModelPerm(RigorousCoupledWaveAnalysis.al_rakic) #Al from dispersion formula
 
-N=6 #one needs much larger N (~11 is good, 15 is better) here for accurate results
+N=10 #one needs much larger N (~11 is good, 15 is better) here for accurate results
 wls=1100:5:1600 #wavelength array
 p=950 #pitch
 d=480 #hole diameter
