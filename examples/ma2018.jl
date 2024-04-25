@@ -36,7 +36,7 @@ Rrf=zeros(length(wls)) #Forward rcp reflectivity
 Trf=zeros(length(wls)) #Forward rcp transmissivity
 Rlf=zeros(length(wls)) #Forward lcp reflectivity
 Tlf=zeros(length(wls)) #Forward lcp transmissivity
-for i=in eachindex(wls) #iterate over all wavelengths
+for i in eachindex(wls) #iterate over all wavelengths
     λ=wls[i] #get wavelength from array
     grd=rcwagrid(N,N,a,a,1E-5,0,λ,air) #build a reciprocal space grid
     ste,stm=rcwasource(grd,1) #define source
@@ -59,7 +59,7 @@ Rrb=zeros(length(wls))#Backward rcp reflectivity
 Trb=zeros(length(wls))#Backward rcp transmissivity
 Rlb=zeros(length(wls))#Backward lcp reflectivity
 Tlb=zeros(length(wls))#Backward lcp transmissivity
-for i=in eachindex(wls)
+for i in eachindex(wls)
     λ=wls[i]
     println(λ)
     grd=rcwagrid(N,N,a,a,1E-5,0,λ,air)
