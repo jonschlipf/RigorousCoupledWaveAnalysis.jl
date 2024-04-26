@@ -36,6 +36,7 @@ Rrf=zeros(length(wls)) #Forward rcp reflectivity
 Trf=zeros(length(wls)) #Forward rcp transmissivity
 Rlf=zeros(length(wls)) #Forward lcp reflectivity
 Tlf=zeros(length(wls)) #Forward lcp transmissivity
+
 @time for i in eachindex(wls) #iterate over all wavelengths
     λ=wls[i] #get wavelength from array
     grd=rcwagrid(N,N,a,a,1E-5,0,λ,air,use_cuda) #build a reciprocal space grid
@@ -59,6 +60,7 @@ Rrb=zeros(length(wls))#Backward rcp reflectivity
 Trb=zeros(length(wls))#Backward rcp transmissivity
 Rlb=zeros(length(wls))#Backward lcp reflectivity
 Tlb=zeros(length(wls))#Backward lcp transmissivity
+
 @time for i in eachindex(wls)
     λ=wls[i]
     grd=rcwagrid(N,N,a,a,1E-5,0,λ,air)

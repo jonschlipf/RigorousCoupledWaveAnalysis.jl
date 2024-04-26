@@ -189,7 +189,7 @@ Compute the eigenmodes of a halfspace
 """
 function halfspace(Kx,Ky,material,λ)
     #Base value
-	εxx=real(sqrt(get_permittivity(material,λ,1)))^2*I
+	εxx=get_permittivity(material,λ,1)*I
     #probably add off-diagonal elements
 	if typeof(material)<:Isotropic
         εzz=εyy=εxx
