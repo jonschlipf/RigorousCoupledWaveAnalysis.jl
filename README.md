@@ -139,11 +139,7 @@ E,H=RigorousCoupledWaveAnalysis.getfields(ain,bout,em,Grd,xypoints,zpoints,λ) #
 ```
 ## CUDA acceleration
 
-The package supports GPU acceleration using CUDA. It is currently not part of the main branch, but a separate cuda branch, and can be installed by:
-```julia
-]add RigorousCoupledWaveAnalysis#cuda
-```
-GPU acceleration is enabled by setting the optional `use_cuda` argument of `rcwagrid()`, which defaults to `false`.
+The package supports GPU acceleration using CUDA. GPU acceleration is enabled by setting the optional `use_cuda` argument of `rcwagrid()`, which defaults to `false`.
 ```julia
 Grd=rcwagrid(N,N,ax,ay,θ,α,λ,Air,true) #create the grid, superstrate is air, cuda support
 ```
