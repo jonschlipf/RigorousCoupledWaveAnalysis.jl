@@ -1,6 +1,4 @@
-
-using LinearAlgebra
-ftype=Float64
+using LinearAlgebra,CUDA
 export ngrid,kgrid,rcwagrid,modes_freespace,RCWAGrid,rcwasource
 """
     RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
@@ -21,40 +19,45 @@ Structure to store a grid for RCWA computation
 * `Kz0` : Wave vector in y, free space
 """
 struct RCWAGrid
-	Nx::Int64
-	Ny::Int64
-    nx::Array{Int64,1}
-    ny::Array{Int64,1}
-    dnx::Array{Int64,2}
-    dny::Array{Int64,2}
-    px::ftype
-    py::ftype
-    Kx::Diagonal{Complex{ftype},Array{Complex{ftype},1}}
-    Ky::Diagonal{Complex{ftype},Array{Complex{ftype},1}}
-    k0::Array{ftype,1}
-    V0::AbstractArray{Complex{ftype},2}
-    Kz0::Diagonal{Complex{ftype},Array{Complex{ftype},1}}
+    Nx::Integer
+    Ny::Integer
+    nx::DenseVector{<:Integer}
+    ny::DenseVector{<:Integer}
+    dnx::AbstractArray{<:Integer,2}
+    dny::AbstractArray{<:Integer,2}
+    px::Real
+    py::Real
+    Kx::Diagonal#{<:Number,DenseVector{<:Number}}
+    Ky::Diagonal#{<:Number,DenseVector{<:Number}}
+    k0::Vector{<:Number}
+    V0::AbstractArray{<:Number,2}
+    Kz0::Diagonal#{<:Number,Vector{<:Number}}
 end
 """
-	ngrid(Nx,Ny)
+	ngrid(Nx,Ny,use_cude=false)
 Computes the orders n of the plane wave expansion
 # Arguments
 * `Nx` : Maximum order in x
 * `Ny` : Maximum order in y
+* `use_cuda` : optional, switch to CUDA GPU solver
 # Outputs
 * `nx` : Order in x
 * `ny` : Order in y
 * `dnx` : Differential order in x
 * `dny` : Differential order in y
 """
-function ngrid(Nx::Int64,Ny::Int64)
+function ngrid(Nx::Integer,Ny::Integer,use_cuda=false)
     #reciprocal space coordinate indices
     nx=vec([r  for r in -Nx:Nx, c in -Ny:Ny])
     ny=vec([c  for r in -Nx:Nx, c in -Ny:Ny])
     #difference matrix for 2dft
-    dnx=[nx[a]-nx[b] for a in 1:length(nx),b in 1:length(nx)]
-    dny=[ny[a]-ny[b] for a in 1:length(ny),b in 1:length(ny)]
-    return nx,ny,dnx,dny
+    dnx=[nx[a]-nx[b] for a in eachindex(nx),b in eachindex(nx)]
+    dny=[ny[a]-ny[b] for a in eachindex(ny),b in eachindex(ny)]
+    dnxr=use_cuda ? CuArray(dnx) : dnx
+    dnyr=use_cuda ? CuArray(dny) : dny
+    nxr=use_cuda ? CuArray(nx) : nx
+    nyr=use_cuda ? CuArray(ny) : ny
+    return nxr,nyr,dnxr,dnyr
 end
 """
     kgrid(nx,ny,px,py,θ,α,λ)
@@ -72,7 +75,7 @@ Computes the wave vectors of the plane wave expansion
 * `Ky` : Wave vector in y
 * `k0` : Free-space 0th-order wavevector
 """
-function kgrid(nx::Array{Int64,1},ny::Array{Int64,1},px::Real,py::Real,θ::Real,α::Real,λ::Real,sup)
+function kgrid(nx::AbstractVector{<:Integer},ny::AbstractVector{<:Integer},px::Real,py::Real,θ::Real,α::Real,λ::Real,sup)
     #all k vectors are generally normalized to k0 here
     #The incoming wave, transformed from spherical coordinates to normalized cartesian coordinates, |k0|=1
     k0=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]*real(sqrt(get_permittivity(sup,λ)))
@@ -80,9 +83,9 @@ function kgrid(nx::Array{Int64,1},ny::Array{Int64,1},px::Real,py::Real,θ::Real,
     kx=k0[1].+real(λ)*nx/px;
     ky=k0[2].+real(λ)*ny/py;
     #need matrix for later computations
-    Kx=Diagonal(kx)
-    Ky=Diagonal(ky)
-    return Complex.(Kx),Complex.(Ky),k0
+    Kx=Diagonal(Complex.(kx))
+    Ky=Diagonal(Complex.(ky))
+    return Kx,Ky,k0
 end
 """
     modes_freespace(Kx,Ky)
@@ -94,23 +97,24 @@ Computes the eigenmodes of propagation through free space, for normalization
 * `V0`: coordinate transform between free space eigenmode amplitude and magnetic field
 * `Kz0`: z-axis component of the propagation vector in free space
 """
-function modes_freespace(Kx::Diagonal{Complex{ftype},Array{Complex{ftype},1}},Ky::Diagonal{Complex{ftype},Array{Complex{ftype},1}})
+function modes_freespace(Kx::Diagonal{<:Number, <:DenseVector{<:Number}},Ky::Diagonal{<:Number, <:DenseVector{<:Number}})
+    IM=Diagonal(Kx*0 .+1)
     #just because |k|=1
-    Kz0=sqrt.(Complex.(I-Kx*Kx-Ky*Ky))
+    Kz0=sqrt.(Complex.(IM-Kx*Kx-Ky*Ky))
 	Kz0[imag.(Kz0).<0].*=-1
 
     #P0 is identity
-    Q0=[Kx*Ky I-Kx*Kx;Ky*Ky-I -Ky*Kx]
+    Q0=[Kx*Ky IM-Kx*Kx;Ky*Ky-IM -Ky*Kx]
     #propagation
 
-    q0=Diagonal(Matrix([1im*Kz0 0I;0I 1im*Kz0]))
+    q0=Diagonal([1im*Kz0 0I;0I 1im*Kz0])
 
     #Free space, so W is identity
     V0=Q0/q0
     return V0,Kz0
 end
 """
-	rcwagrid(Nx,Ny,px,py,θ,α,λ,sup)
+	rcwagrid(Nx,Ny,px,py,θ,α,λ,sup,use_cuda=false)
 Create a reciprocal space grid for RCWA simulation
 # Arguments
 * `nx` : Maximum order in x
@@ -121,11 +125,16 @@ Create a reciprocal space grid for RCWA simulation
 * `α` : azimuth angle of incoming wave
 * `λ` : wavelength
 * `sup` : superstrate material
+* `use_cuda` : optional, switch to CUDA GPU solver
 # Outputs
 * `grd`: RCWA grid struct
 """
-function rcwagrid(Nx::Int64,Ny::Int64,px::Real,py::Real,θ::Real,α::Real,λ::Real,sup)
-    nx,ny,dnx,dny=ngrid(Nx,Ny)
+function rcwagrid(Nx::Integer,Ny::Integer,px::Real,py::Real,θ::Real,α::Real,λ::Real,sup,use_gpu=false)
+    if use_gpu&&!CUDA.functional()        
+        @warn "CUDA not functional, fallback to CPU."
+        use_gpu=false
+    end
+    nx,ny,dnx,dny=ngrid(Nx,Ny,use_gpu)
     Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ,sup)
     V0,Kz0=modes_freespace(Kx,Ky)
 	return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
@@ -160,6 +169,10 @@ function rcwasource(grd,nsup=1) #nsup specification is deprecated here
     ψ0tm=zeros(width*2)*1im
     ψ0tm[convert(Int64,(width+1)/2)]=ktm[1]
     ψ0tm[convert(Int64,(width+1)/2)+width]=ktm[2]
+    if grd.dnx isa CuArray
+        ψ0tm=CuArray(ψ0tm)
+        ψ0te=CuArray(ψ0te)
+    end
     return ψ0te,ψ0tm
 end
 

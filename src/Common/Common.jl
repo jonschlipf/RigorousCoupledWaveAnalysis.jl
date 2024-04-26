@@ -1,7 +1,7 @@
 #Common methodes for computations with eigenmodes and transforms
 
 module  Common
-using LinearAlgebra
+using LinearAlgebra,CUDA
 include("ft2d.jl")
 include("materials.jl")
 include("models.jl")
@@ -10,7 +10,7 @@ export Eigenmodes,Halfspace
 export eigenmodes,halfspace
 export a2e,a2e2d,a2p,e2p,slicehalf,getfields,a2p2
 """
-	Eigenmodes(V,W,X,q)
+    Eigenmodes(V,W,X,q)
 
 Structure to store the eigenmodes of a layer
 # Attributes
@@ -20,14 +20,14 @@ Structure to store the eigenmodes of a layer
 * `q` : Pseudo wave vector
 """
 struct Eigenmodes
-    V::AbstractArray{Complex{Float64},2} #Transform towards magnetic fields
-    W::AbstractArray{Complex{Float64},2} #Transform towards electric fields
-    X::AbstractArray{Complex{Float64},2} #Propagation of the amplitude vector through the layer
-    q::AbstractArray{Complex{Float64},2} #pseudo wave vector
+    V::AbstractArray{<:Number,2} #Transform towards magnetic fields
+    W::AbstractArray{<:Number,2} #Transform towards electric fields
+    X::AbstractArray{<:Number,2} #Propagation of the amplitude vector through the layer
+    q::Diagonal #pseudo wave vector
 
 end
 """
-	Halfspace(V,Kz)
+    Halfspace(V,Kz)
 
 Structure to store the eigenmodes of a layer
 # Attributes
@@ -56,54 +56,57 @@ Compute the eigenmodes of a layer
 """
 function eigenmodes(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
     k0=2π/real(λ)
-	#get the base permittivity
+    #get the base permittivity
     εxx=get_permittivity(l.materials[1],λ,1)*I
-    if typeof(l.materials[1])<:Isotropic
-    else
-    end
     #add the permittivity for all inclusions
-	if minimum([typeof(m)<:Isotropic for m in l.materials])
-		εxx=get_permittivity(l.materials[1],λ)*I
-	    for ct=1:length(l.geometries)
-    	    rec=reciprocal(l.geometries[ct],dnx,dny)
-        	εxx+=rec*(get_permittivity(l.materials[ct+1],λ)-get_permittivity(l.materials[ct],λ))
-		end
+    if minimum([typeof(m)<:Isotropic for m in l.materials])
+        #all isotropic
+        εxx=get_permittivity(l.materials[1],λ)*I
+        for ct=1:length(l.geometries)
+            rec=reciprocal(l.geometries[ct],dnx,dny)
+            εxx+=rec*(get_permittivity(l.materials[ct+1],λ)-get_permittivity(l.materials[ct],λ))
+        end
         εzz=εyy=εxx
         εxy=εyx=0I
-	else
-		εxx=get_permittivity(l.materials[1],λ,1)*I
+    else
+        #anisotropic
+        εxx=get_permittivity(l.materials[1],λ,1)*I
         εxy=get_permittivity(l.materials[1],λ,2)*I
         εyx=get_permittivity(l.materials[1],λ,3)*I
         εyy=get_permittivity(l.materials[1],λ,4)*I
         εzz=get_permittivity(l.materials[1],λ,5)*I
-	    for ct=1:length(l.geometries)
-    	    rec=reciprocal(l.geometries[ct],dnx,dny)
-        	εxx+=rec*(get_permittivity(l.materials[ct+1],λ,1)-get_permittivity(l.materials[ct],λ,1))
-			εxy+=rec*(get_permittivity(l.materials[ct+1],λ,2)-get_permittivity(l.materials[ct],λ,2))
-        	εyx+=rec*(get_permittivity(l.materials[ct+1],λ,3)-get_permittivity(l.materials[ct],λ,3))
-        	εyy+=rec*(get_permittivity(l.materials[ct+1],λ,4)-get_permittivity(l.materials[ct],λ,4))
-			εzz+=rec*(get_permittivity(l.materials[ct+1],λ,5)-get_permittivity(l.materials[ct],λ,5))
-    	end
-	end	 	
+        for ct=1:length(l.geometries)
+            rec=reciprocal(l.geometries[ct],dnx,dny)
+            εxx+=rec*(get_permittivity(l.materials[ct+1],λ,1)-get_permittivity(l.materials[ct],λ,1))
+            εxy+=rec*(get_permittivity(l.materials[ct+1],λ,2)-get_permittivity(l.materials[ct],λ,2))
+            εyx+=rec*(get_permittivity(l.materials[ct+1],λ,3)-get_permittivity(l.materials[ct],λ,3))
+            εyy+=rec*(get_permittivity(l.materials[ct+1],λ,4)-get_permittivity(l.materials[ct],λ,4))
+            εzz+=rec*(get_permittivity(l.materials[ct+1],λ,5)-get_permittivity(l.materials[ct],λ,5))
+        end
+    end	 	
+
     #reciprocal of permittivity
-    η=I/εzz
-    # η=I/εxx
+    #η=inv(εzz)
     #Maxwell equations transformed
     #this is old code
-	#P=[Kx*η*Ky I-Kx*η*Kx;Ky*η*Ky-I -Ky*η*Kx]
+    #P=[Kx*η*Ky I-Kx*η*Kx;Ky*η*Ky-I -Ky*η*Kx]
     Q=[Kx*Ky+εyx εyy-Kx*Kx;Ky*Ky-εxx -εxy-Ky*Kx]
     #M=Matrix(P*Q)
-	#analytic multiplication can speed things up:
-	A=η*(Ky*εyx+Kx*εxx)
-	B=η*(Ky*εyy+Kx*εxy)
-	M=[Ky.^2-εxx+Kx*A -Ky*Kx-εxy+Kx*B;-Kx*Ky-εyx+Ky*A Kx.^2-εyy+Ky*B]
-	#eigenmodes
-    ev=eigen(M)
+    A=εzz\(Ky*εyx+Kx*εxx)
+    B=εzz\(Ky*εyy+Kx*εxy)
+    M=[Ky.^2-εxx+Kx*A -Ky*Kx-εxy+Kx*B;-Kx*Ky-εyx+Ky*A Kx.^2-εyy+Ky*B]
+    #eigenmodes
+    ev=eigen(Matrix(M))
     q=Diagonal(sqrt.(Complex.(ev.values)))
-	#select negative root
+    #select negative root
     q[real.(q).>0].*=-1
     #W is transform between amplitude vector and E-Field
-    W=ev.vectors
+    if dnx isa CuArray
+        W=CuArray(ev.vectors)
+        q=CuArray(q)
+    else
+        W=ev.vectors
+    end
     #V is transform between amplitude vector and H-Field
     V=Q*W/Diagonal(q)
     #X the factor applied to the amplitudes when propagatin through the layer
@@ -359,19 +362,19 @@ function getfields(ain,bout,em::Eigenmodes,grd::RCWAGrid,xypoints,zpoints,λ,win
     #loop through z constants
 	for zind in eachindex(zpoints)
         #propagation of the waves
-        a=exp( Matrix(em.q*2π/λ*zpoints[zind]))*ain
-        b=exp(-Matrix(em.q*2π/λ*zpoints[zind]))*bout
+        a=exp( (em.q*2π/λ*zpoints[zind]))*ain
+        b=exp(-(em.q*2π/λ*zpoints[zind]))*bout
         #convert amplitude vectors to electric fields
         ex,ey,ez=a2e(a+b,em.W,grd.Kx,grd.Ky,grd.Kz0)
         hx,hy,hz=a2e(a-b,em.V,grd.Kx,grd.Ky,grd.Kz0)
         #convert from reciprocal lattice vectors to real space distribution
-        efield[:,:,zind,1]=recipvec2real(grd.nx,grd.ny,ex,nx,ny,windowfunction)
-        efield[:,:,zind,2]=recipvec2real(grd.nx,grd.ny,ey,nx,ny,windowfunction)
-        efield[:,:,zind,3]=recipvec2real(grd.nx,grd.ny,ez,nx,ny,windowfunction)
+        efield[:,:,zind,1]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(ex),nx,ny,windowfunction)
+        efield[:,:,zind,2]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(ey),nx,ny,windowfunction)
+        efield[:,:,zind,3]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(ez),nx,ny,windowfunction)
 
-        hfield[:,:,zind,1]=recipvec2real(grd.nx,grd.ny,hx,nx,ny,windowfunction)
-        hfield[:,:,zind,2]=recipvec2real(grd.nx,grd.ny,hy,nx,ny,windowfunction)
-        hfield[:,:,zind,3]=recipvec2real(grd.nx,grd.ny,hz,nx,ny,windowfunction)
+        hfield[:,:,zind,1]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(hx),nx,ny,windowfunction)
+        hfield[:,:,zind,2]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(hy),nx,ny,windowfunction)
+        hfield[:,:,zind,3]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(hz),nx,ny,windowfunction)
     end
     return efield,hfield
 end

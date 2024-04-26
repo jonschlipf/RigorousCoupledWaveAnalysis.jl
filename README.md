@@ -137,6 +137,20 @@ xypoints=[100,100]    #set the number of points to compute in x,y
 zpoints=0:5:100              #set desired points on z-axis
 E,H=RigorousCoupledWaveAnalysis.getfields(ain,bout,em,Grd,xypoints,zpoints,λ) #compute the electric and magnetic field
 ```
+## CUDA acceleration
+
+The package supports GPU acceleration using CUDA. It is currently not part of the main branch, but a separate cuda branch, and can be installed by:
+```julia
+]add RigorousCoupledWaveAnalysis#cuda
+```
+GPU acceleration is enabled by setting the optional `use_cuda` argument of `rcwagrid()`, which defaults to `false`.
+```julia
+Grd=rcwagrid(N,N,ax,ay,θ,α,λ,Air,true) #create the grid, superstrate is air, cuda support
+```
+The CUDA implementation is heavily inspired by [this fork](https://github.com/algorithmx/RigorousCoupledWaveAnalysisCUDA.jl) by [@algorithmx](https://github.com/algorithmx/). However, implementation is slightly different, as even the grid integer arrays are moved to GPU in order to improve type inference. CuArrays are only explicitly created in the rcwagrid() and ngrid() functions, and everything else uses generic AbstractArray types. 
+A major exception is the solution of the non-hermitian Eigenvalue problems, which is not implemented in CUDA. Here, a fallback CPU routine (`LinearAlgebra.eigen`) is used. 
+For a truncation order of `N=10`, GPU acceleration achieves a speedup of a factor of 5 in a system with dual AMD EPYC 7713 64-Core Processor and NVIDIA H100 accelerator.
+
 
 ## Mathematics
 

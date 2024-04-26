@@ -30,7 +30,7 @@ function build_model(n_sup)
 end
 
 
-grd=rcwagrid(N,N,p,p,1E-5,0,λ,ConstantPerm(n_H2O^2)) #reciprocal space grid
+grd=rcwagrid(N,N,p,p,1E-5,0,λ,ConstantPerm(n_H2O^2),true) #reciprocal space grid
 ste,stm=rcwasource(grd) #te and tm source amplitudes
 mdl=build_model(n_H2O)
 #number of desired data points
