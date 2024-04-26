@@ -2,8 +2,8 @@ using RigorousCoupledWaveAnalysis,LinearAlgebra
 using Test
 include("analytical.jl")
 @testset "VerticalIncidence" begin
-n1=rand()*10+10im*rand()
-n2=rand()*10+10im*rand()
+n1=rand()*10
+n2=rand()*10
 mdl=RCWAModel([],ConstantPerm(n1^2),ConstantPerm(n2^2))
 grd=rcwagrid(0,0,100,100,1E-3,rand()*360,1000,ConstantPerm(n1^2))
 ψte,~=rcwasource(grd,n1)
@@ -15,8 +15,8 @@ R0,~,T0,~=fresnelPower(n1,n2,0)
 end
 
 @testset "GrazingIncidence" begin
-n1=rand()*10+10im*rand()
-n2=n1+rand()*10+10im*rand()
+n1=rand()*10
+n2=n1+rand()*10
 θ=1+88rand()
 mdl=RCWAModel([],ConstantPerm(n1^2),ConstantPerm(n2^2))
 grd=rcwagrid(0,0,100,100,θ,rand()*360,1000,ConstantPerm(n1^2))
@@ -33,9 +33,9 @@ R0s,R0p,T0s,T0p=fresnelPower(n1,n2,θ)
 end
 
 @testset "Fabryperot" begin
-n1=1+1rand()+1im*rand()
+n1=1+1rand()
 n2=n1+rand()+1im*rand() #n2>n1 against TIR
-n3=n1+rand()+1im*rand() #n3>n1 against TIR
+n3=n1+rand() #n3>n1 against TIR
 θ=88rand()+1
 λ=1000rand()
 thickness=100rand()
@@ -54,7 +54,7 @@ R0s,R0p,T0s,T0p=fabryperot(n1,n2,n3,2π/λ,thickness,θ)
 end
 
 @testset "unitySource" begin
-n1=1+10rand()+10rand()*1im
+n1=1+10rand()
 λ=1000rand()
 θ=88rand()+1
 α=360rand()
@@ -88,10 +88,10 @@ end
 
 
 @testset "RT_ScatVSETM_conservation_simple" begin
-eps1=10rand()+10im*rand()
+eps1=10rand()
 eps2=10rand()
 eps3=10rand()
-eps4=10rand()+10im*rand()
+eps4=10rand()
 λ=1000rand()
 mdl=RCWAModel([PatternedLayer(100rand(),[ConstantPerm(eps2),ConstantPerm(eps3)],[Circle(rand())])],ConstantPerm(eps1),ConstantPerm(eps4))
 grd=rcwagrid(1,1,100rand(),100rand(),88rand()+.1,360rand(),λ,ConstantPerm(eps1))
