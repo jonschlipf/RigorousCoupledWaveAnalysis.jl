@@ -1,5 +1,5 @@
 module RigorousCoupledWaveAnalysis
-export InterpolPerm,InterpolPermA,ConstantPerm,ConstantPermA,ModelPerm,get_permittivity
+export InterpolPerm,InterpolPermA,ConstantPerm,ConstantPermA,ModelPerm,get_permittivity,ModelPermA
 export Circle,Rectangle,Ellipse,Custom
 export Combination,Rotation,Shift
 export Layer,SimpleLayer,PatternedLayer,Material,AnisotropicLayer
@@ -10,7 +10,7 @@ export ngrid,kgrid,rcwagrid,rcwasource,getfields
 
 
 export ScatterMatrix,scattermatrix_ref,scattermatrix_tra,scattermatrix_layer,concatenate,scatMatrices
-export srcwa_reftra,srcwa_amplitudes,srcwa_flow
+export srcwa_reftra,srcwa_amplitudes,srcwa_flows
 export recip2real,real2recip,recipvec2real
 
 

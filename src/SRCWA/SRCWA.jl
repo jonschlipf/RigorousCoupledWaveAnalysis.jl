@@ -1,6 +1,6 @@
 module SRCWA
 using LinearAlgebra
-export srcwa_reftra,a2p,slicehalf,srcwa_matrices,Srcwa_matrices,srcwa_amplitudes,srcwa_flow
+export srcwa_reftra,a2p,slicehalf,srcwa_amplitudes,srcwa_flows
 
 export innerSource,dipoleRad,pointDipole
 

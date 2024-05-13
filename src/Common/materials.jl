@@ -1,7 +1,7 @@
 
 using Interpolations
 
-export Material,ConstantPerm,get_permittivity,InterpolPerm,InterpolPermA,ModelPerm,ConstantPermA
+export Material,ConstantPerm,get_permittivity,InterpolPerm,InterpolPermA,ModelPerm,ConstantPermA,ModelPermA
 
 abstract type Material end
 abstract type Isotropic <: Material end
@@ -17,7 +17,7 @@ struct ConstantPerm <: Isotropic
     ε::Complex{Float64}
 end
 """
-    ConstantPerm(ε)
+    ConstantPermA(ε)
 RCWA anisotropic material model with wavelength-independent permittivity
 # Attributes
 * `ε` : Complex 5-element vector ([εxx,εxy,εyx,εyy,εzz]) denoting the permittivity
@@ -32,6 +32,15 @@ RCWA isotropic material model with the permittivity defined by an analytical mod
 * `f` : Function to compute the complex permittivity value for a single wavelength
 """
 struct ModelPerm<: Isotropic
+    f::Function
+end
+"""
+    ModelPermA(ε)
+RCWA anisotropic material model with the permittivity defined by an analytical model
+# Attributes
+* `f` : Vector containing five functions to compute the complex permittivity tensor for a single wavelength ([εxx,εxy,εyx,εyy,εzz])
+"""
+struct ModelPermA<: Anisotropic
     f::Function
 end
 """
@@ -68,6 +77,9 @@ function get_permittivity(mat::ConstantPerm,λ,index=1)
 end
 function get_permittivity(mat::ModelPerm,λ,index=1)
     return Complex(mat.f(λ))*(index==1||index==4||index==5)
+end
+function get_permittivity(mat::ModelPermA,λ,index=1)
+    return Complex(mat.f[index](λ))
 end
 function get_permittivity(mat::InterpolPerm,λ,index=1)
     return Complex(mat.ε(λ))*(index==1||index==4||index==5)
