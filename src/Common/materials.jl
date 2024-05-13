@@ -41,7 +41,7 @@ RCWA anisotropic material model with the permittivity defined by an analytical m
 * `f` : Vector containing five functions to compute the complex permittivity tensor for a single wavelength ([εxx,εxy,εyx,εyy,εzz])
 """
 struct ModelPermA<: Anisotropic
-    f::Function
+    f::Vector{Function}
 end
 """
     InterpolPerm(ε)
