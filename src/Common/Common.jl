@@ -197,12 +197,12 @@ function get_εzz(dnx,dny,λ,l::PatternedLayer)
     return εzz
 end
 
-function get_εzz(dnx,dny,λ,lu:SimpleLayer)
+function get_εzz(dnx,dny,λ,l::SimpleLayer)
     return get_permittivity(lu.material,λ)*I
 end
 
-function get_εzz(dnx,dny,λ,lu:AnisotropicLayer)
-    return get_permittivity(lu.material,λ,5)*I
+function get_εzz(dnx,dny,λ,l::AnisotropicLayer)
+    return get_permittivity(l.material,λ,5)*I
 end
 
 """
