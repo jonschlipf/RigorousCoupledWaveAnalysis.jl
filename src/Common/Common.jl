@@ -249,24 +249,6 @@ end
 
 
 """
-    a2p2(a,W,Kx,Ky,Kz,kz0)
-
-Converts an amplitude vector (in substrate or superstrate) to Poynting power flow in z direction
-# Arguments
-* `a` : amplitude vector
-* `W` : eigenmodes of the halfspace
-* `Kx` : x component of the wavevector in the medium
-* `Ky` : y component of the wavevector in the medium
-* `Kz` : z component of the wavevector in the medium
-* `kz0` : z component of the plane wave wavevector in the superstrate
-# Outputs
-* `P` : power flow
-"""
-function a2p2(a,W,Kx,Ky,Kz,kz0)
-    ex,ey,ez=a2e(a,W,Kx,Ky,Kz)
-    return e2p(ex,ey,ez,Kz,kz0)
-end
-"""
     a2p(a,b,W,Kx,Ky,kz0)
 
 Converts an amplitude vector (in substrate or superstrate) to Poynting power flow in z direction
@@ -290,7 +272,6 @@ end
     a2e2d(a,W)
 
 Converts an amplitude vector to reciprocal-space electric fields Ex and Ey.
-This is a "light" version of the "a2e" method.
 # Arguments
 * `a` : amplitude vector
 * `W` : eigenmodes of the halfspace
@@ -305,27 +286,6 @@ function a2e2d(a,W)
     return ex,ey
 end
 
-"""
-    a2e(a,W,Kx,Ky,Kz)
-
-converts an amplitude vector (in substrate or superstrate) to reciprocal-space electric fields
-# Arguments
-* `a` : x amplitude vector
-* `W` : eigenmodes of the halfspace
-* `Kx` : x component of the wavevector in the medium
-* `Ky` : y component of the wavevector in the medium
-* `Kz` : z component of the wavevector in the medium
-# Outputs
-* `ex` : x-component of the electric field
-* `ey` : y-component of the electric field
-* `ez` : z-component of the electric field
-"""
-function a2e(a,W,Kx,Ky,Kz)
-	ex,ey=a2e2d(a,W)
-	#Plane wave, E⊥k, E*k=0
-    ez=-Kz\(Kx*ex+Ky*ey)
-    return ex,ey,ez
-end
 
 """
     getfields(ain,bout,em::Eigenmodes,grd::RCWAGrid,xypoints,zpoints,λ,window,padding)
@@ -365,10 +325,10 @@ function getfields(ain,bout,em::Eigenmodes,grd::RCWAGrid,xypoints,zpoints,λ,win
         a=exp( (em.q*2π/λ*zpoints[zind]))*ain
         b=exp(-(em.q*2π/λ*zpoints[zind]))*bout
         #convert amplitude vectors to electric fields
-        ex,ey,ez=a2e(a+b,em.W,grd.Kx,grd.Ky,grd.Kz0)
-        hx,hy,hz=a2e(a-b,em.V,grd.Kx,grd.Ky,grd.Kz0)
-        ez=1im*(grd.Kx*hy-grd.Ky*hx)
-        hz=1im*(grd.Kx*ey-grd.Ky*ex)
+        ex,ey=a2e2d(a+b,em.W)
+        hx,hy=a2e2d(a-b,em.V)
+        ez=-1im*(grd.Kx*hy-grd.Ky*hx)
+        hz=-1im*(grd.Kx*ey-grd.Ky*ex)
         #convert from reciprocal lattice vectors to real space distribution
         efield[:,:,zind,1]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(ex),nx,ny,windowfunction)
         efield[:,:,zind,2]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(ey),nx,ny,windowfunction)
