@@ -188,7 +188,7 @@ function etm_getfields_stack(mdl::RCWAModel,grd::RCWAGrid,xypoints,zpoints,λ,a,
     H=zeros(xypoints[1],xypoints[2],length(zpoints),3)*1im
     for i in eachindex(mdl.layers)
         zpoints_separated=zpoints[zstack.<=zpoints.<zstack+mdl.layers[i].thickness]
-        Ei,Hi=getfields(a[i],b[i],em[i],grd,xypoints,zpoints_separated.-zstack,λ,window,padding)
+        Ei,Hi=getfields(a[i],b[i],em[i],grd,xypoints,zpoints_separated.-zstack,λ,get_εzz(grd.dnx,grd.dny,λ,mdl.layers[i]),window,padding)
         E[:,:,zind:zind+length(zpoints_separated)-1,:]=Ei
         H[:,:,zind:zind+length(zpoints_separated)-1,:]=Hi
         zstack=zstack+mdl.layers[i].thickness
