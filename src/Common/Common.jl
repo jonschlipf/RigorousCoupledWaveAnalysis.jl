@@ -327,8 +327,8 @@ function getfields(ain,bout,em::Eigenmodes,grd::RCWAGrid,xypoints,zpoints,λ,win
         #convert amplitude vectors to electric fields
         ex,ey=a2e2d(a+b,em.W)
         hx,hy=a2e2d(a-b,em.V)
-        ez=-1im*(grd.Kx*hy-grd.Ky*hx)
-        hz=-1im*(grd.Kx*ey-grd.Ky*ex)
+        ez=1im*(grd.Kx*hy-grd.Ky*hx)
+        hz=1im*(grd.Kx*ey-grd.Ky*ex)
         #convert from reciprocal lattice vectors to real space distribution
         efield[:,:,zind,1]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(ex),nx,ny,windowfunction)
         efield[:,:,zind,2]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(ey),nx,ny,windowfunction)
