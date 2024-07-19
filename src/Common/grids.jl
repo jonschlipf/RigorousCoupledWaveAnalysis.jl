@@ -156,8 +156,8 @@ function rcwagrid_pml(Nx::Integer,Ny::Integer,px::Real,py::Real,θ::Real,α::Rea
     end
     nx,ny,dnx,dny=ngrid(Nx,Ny,use_gpu)
     Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ,sup)
-    Kx=Diagonal(pmlgrid(dnx,pml_fraction,γ))*Kx
-    Ky=Diagonal(pmlgrid(dny,pml_fraction,γ))*Ky
+    Kx=pmlgrid(dnx,pml_fraction,γ)*Kx
+    Ky=pmlgrid(dny,pml_fraction,γ)*Ky
 
     V0,Kz0=modes_freespace(Kx,Ky)
     return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
