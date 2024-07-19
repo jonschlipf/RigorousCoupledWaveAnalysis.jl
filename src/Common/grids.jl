@@ -1,5 +1,5 @@
 using LinearAlgebra,CUDA
-export ngrid,kgrid,rcwagrid,modes_freespace,RCWAGrid,rcwasource
+export ngrid,kgrid,rcwagrid,modes_freespace,RCWAGrid,rcwasource,rcwagrid_pml
 """
     RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
 Structure to store a grid for RCWA computation
@@ -87,6 +87,16 @@ function kgrid(nx::AbstractVector{<:Integer},ny::AbstractVector{<:Integer},px::R
     Ky=Diagonal(Complex.(ky))
     return Kx,Ky,k0
 end
+function pmlgrid(n,pml_fraction::Real,γ::Number=1/(1-1im))
+    f=0.0im*n
+    for i in eachindex(f)
+        f[i]=-pml_fraction*(-1)^n[i]*((1+γ/4)*sinc(pml_fraction*n[i])+1/2*sinc(n[i]*pml_fraction-1)+.5*sinc(pml_fraction*n[i]+1)-γ/8*sinc(n[i]*pml_fraction-2)-γ/8*sinc(n[i]*pml_fraction+2))
+        if n[i]==1
+            f[i]+=1
+        end
+    end
+    return f
+end
 """
     modes_freespace(Kx,Ky)
 Computes the eigenmodes of propagation through free space, for normalization
@@ -138,6 +148,19 @@ function rcwagrid(Nx::Integer,Ny::Integer,px::Real,py::Real,θ::Real,α::Real,λ
     Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ,sup)
     V0,Kz0=modes_freespace(Kx,Ky)
 	return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
+end
+function rcwagrid_pml(Nx::Integer,Ny::Integer,px::Real,py::Real,θ::Real,α::Real,λ::Real,sup,pml_fraction::Real,γ::Number=1/(1-1im),use_gpu=false)
+    if use_gpu&&!CUDA.functional()        
+        @warn "CUDA not functional, fallback to CPU."
+        use_gpu=false
+    end
+    nx,ny,dnx,dny=ngrid(Nx,Ny,use_gpu)
+    Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ,sup)
+    Kx=pmlgrid(nx,pml_fraction,γ)*Kx
+    Ky=pmlgrid(nx,pml_fraction,γ)*Ky
+
+    V0,Kz0=modes_freespace(Kx,Ky)
+    return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
 end
 """
 	rcwasource(grd)
