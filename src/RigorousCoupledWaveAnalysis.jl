@@ -6,7 +6,7 @@ export Layer,SimpleLayer,PatternedLayer,Material,AnisotropicLayer
 
 export RCWAModel
 export etm_reftra,etm_propagate,etm_amplitudes,etm_flow,etm_reftra_flows,etm_getfields_stack
-export ngrid,kgrid,rcwagrid,rcwasource,getfields
+export ngrid,kgrid,rcwagrid,rcwasource,getfields,rcwagrid_pml
 
 
 export ScatterMatrix,scattermatrix_ref,scattermatrix_tra,scattermatrix_layer,concatenate,scatMatrices
