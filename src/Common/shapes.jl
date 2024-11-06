@@ -1,4 +1,4 @@
-export Custom,Circle,Rectangle,Ellipse
+export Custom,Circle,Rectangle,Ellipse,CustomR
 using SpecialFunctions
 """
     Circle(d)
@@ -30,6 +30,15 @@ struct Custom <: Geometry
     F::Array{Complex{Float64},2}
 end
 """
+    CustomR(f)
+A custom inclusion
+# Attributes
+* `f` : predefinded custom real space matrix
+"""
+struct Custom <: Geometry
+    f::Array{Complex{Float64},2}
+end
+"""
     Ellipse(dx,dy)
 An elliptic inclusion
 # Attributes
@@ -50,6 +59,9 @@ end
 function reciprocal(c::Custom,dnx,dny)
     return c.F
 end
+function reciprocal(c::CustomR,dnx,dny)
+    return real2recip(dnx,dny,c.f)
+end
 function reciprocal(e::Ellipse,dnx,dny)
     radix=Matrix(.5*sqrt.((dnx*e.dx).^2+(dny*e.dy).^2))
     result=besselj.(1,2*pi*radix)./radix
@@ -66,6 +78,10 @@ function drawable(r::Rectangle)
     return [.5*r.dx,-.5*r.dx,-.5*r.dx,.5*r.dx,.5*r.dx],[.5*r.dy,.5*r.dy,-.5*r.dy,-.5*r.dy,.5*r.dy]
 end
 function drawable(c::Custom)
+    @warn "The drawable method is not implemented for Custom geometries."
+	return 0,0
+end
+function drawable(c::CustomR)
     @warn "The drawable method is not implemented for Custom geometries."
 	return 0,0
 end
