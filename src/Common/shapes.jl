@@ -35,7 +35,7 @@ A custom inclusion
 # Attributes
 * `f` : predefinded custom real space matrix
 """
-struct Custom <: Geometry
+struct CustomR <: Geometry
     f::Array{Complex{Float64},2}
 end
 """
