@@ -14,7 +14,7 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
 CSV = "^0.10"
-DataFrames = "^1.0"
+DataFrames = "^1"
 FFTW = "^1"
 Interpolations = "^0.13"
 SpecialFunctions = "1 , 2"
