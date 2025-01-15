@@ -8,7 +8,7 @@ include("models.jl")
 include("grids.jl")
 export Eigenmodes,Halfspace
 export eigenmodes,halfspace
-export a2e,a2e2d,a2p,e2p,slicehalf,getfields,a2p2,get_εzz
+export a2e2d,a2p,e2p,slicehalf,getfields,get_εzz
 """
     Eigenmodes(V,W,X,q)
 
@@ -279,29 +279,7 @@ end
 
 
 """
-<<<<<<< HEAD
     a2p(a,b,W,Kx,Ky,kz0)
-=======
-    a2p2(a,W,Kx,Ky,Kz,kz0)
-
-Converts an amplitude vector (in substrate or superstrate) to Poynting power flow in z direction
-# Arguments
-* `a` : amplitude vector
-* `W` : eigenmodes of the halfspace
-* `Kx` : x component of the wavevector in the medium
-* `Ky` : y component of the wavevector in the medium
-* `Kz` : z component of the wavevector in the medium
-* `kz0` : z component of the plane wave wavevector in the superstrate
-# Outputs
-* `P` : power flow
-"""
-function a2p2(a,W,Kx,Ky,Kz,kz0)
-    ex,ey,ez=a2e(a,W,Kx,Ky,Kz)
-    return e2p(ex,ey,ez,Kz,kz0)
-end
-"""
-    a2p(a,b,V,W,kz0)
->>>>>>> dc52afda8d6111de614d87841053a2e6a1a05938
 
 Converts an amplitude vector (in substrate or superstrate) to Poynting power flow in z direction
 # Arguments

@@ -8,7 +8,7 @@ include("models.jl")
 include("grids.jl")
 export Eigenmodes,Halfspace
 export eigenmodes,halfspace
-export a2e,a2e2d,a2p,e2p,slicehalf,getfields,a2p2,get_εzz
+export a2e,a2e2d,a2p,e2p,slicehalf,getfields,a2p2
 """
     Eigenmodes(V,W,X,q)
 
@@ -175,36 +175,6 @@ function eigenmodes(g::RCWAGrid,λ,l::Array{Layer,1})
     end
     return rt
 end
-function get_εzz(dnx,dny,λ,l::PatternedLayer)
-    #get the base permittivity
-    εzz=get_permittivity(l.materials[1],λ,1)*I
-    #add the permittivity for all inclusions
-    if minimum([typeof(m)<:Isotropic for m in l.materials])
-        #all isotropic
-        εzz=get_permittivity(l.materials[1],λ)*I
-        for ct=1:length(l.geometries)
-            rec=reciprocal(l.geometries[ct],dnx,dny)
-            εzz+=rec*(get_permittivity(l.materials[ct+1],λ)-get_permittivity(l.materials[ct],λ))
-        end
-    else
-        #anisotropic
-        εzz=get_permittivity(l.materials[1],λ,5)*I
-        for ct=1:length(l.geometries)
-            rec=reciprocal(l.geometries[ct],dnx,dny)
-            εzz+=rec*(get_permittivity(l.materials[ct+1],λ,5)-get_permittivity(l.materials[ct],λ,5))
-        end
-    end	 	
-    return εzz
-end
-
-function get_εzz(dnx,dny,λ,l::SimpleLayer)
-    return get_permittivity(l.material,λ)*I
-end
-
-function get_εzz(dnx,dny,λ,l::AnisotropicLayer)
-    return get_permittivity(l.material,λ,5)*I
-end
-
 """
     halfspace(Kx,Ky,material,λ)
 
@@ -279,9 +249,6 @@ end
 
 
 """
-<<<<<<< HEAD
-    a2p(a,b,W,Kx,Ky,kz0)
-=======
     a2p2(a,W,Kx,Ky,Kz,kz0)
 
 Converts an amplitude vector (in substrate or superstrate) to Poynting power flow in z direction
@@ -300,8 +267,7 @@ function a2p2(a,W,Kx,Ky,Kz,kz0)
     return e2p(ex,ey,ez,Kz,kz0)
 end
 """
-    a2p(a,b,V,W,kz0)
->>>>>>> dc52afda8d6111de614d87841053a2e6a1a05938
+    a2p(a,b,W,Kx,Ky,kz0)
 
 Converts an amplitude vector (in substrate or superstrate) to Poynting power flow in z direction
 # Arguments
@@ -324,6 +290,7 @@ end
     a2e2d(a,W)
 
 Converts an amplitude vector to reciprocal-space electric fields Ex and Ey.
+This is a "light" version of the "a2e" method.
 # Arguments
 * `a` : amplitude vector
 * `W` : eigenmodes of the halfspace
@@ -338,6 +305,27 @@ function a2e2d(a,W)
     return ex,ey
 end
 
+"""
+    a2e(a,W,Kx,Ky,Kz)
+
+converts an amplitude vector (in substrate or superstrate) to reciprocal-space electric fields
+# Arguments
+* `a` : x amplitude vector
+* `W` : eigenmodes of the halfspace
+* `Kx` : x component of the wavevector in the medium
+* `Ky` : y component of the wavevector in the medium
+* `Kz` : z component of the wavevector in the medium
+# Outputs
+* `ex` : x-component of the electric field
+* `ey` : y-component of the electric field
+* `ez` : z-component of the electric field
+"""
+function a2e(a,W,Kx,Ky,Kz)
+	ex,ey=a2e2d(a,W)
+	#Plane wave, E⊥k, E*k=0
+    ez=-Kz\(Kx*ex+Ky*ey)
+    return ex,ey,ez
+end
 
 """
     getfields(ain,bout,em::Eigenmodes,grd::RCWAGrid,xypoints,zpoints,λ,window,padding)
@@ -357,7 +345,7 @@ computes the electric and magnetic fields within a layer
 * `efield` : 4D tensor for the electric field (dimensions are x, y, z, and the component (E_x or E_y or E_z)
 * `hfield` : 4D tensor for the magnetic field (dimensions are x, y, z, and the component (E_x or E_y or E_z)
 """
-function getfields(ain,bout,em::Eigenmodes,grd::RCWAGrid,xypoints,zpoints,λ,εzz,window="Hann",padding=[0,0])
+function getfields(ain,bout,em::Eigenmodes,grd::RCWAGrid,xypoints,zpoints,λ,window="Hann",padding=[0,0])
     Nx=Int(floor(xypoints[1]/2))
     Ny=Int(floor(xypoints[2]/2))
     nx=[r for r in -Nx:Nx-1, c in -Ny:Ny-1]
@@ -377,10 +365,8 @@ function getfields(ain,bout,em::Eigenmodes,grd::RCWAGrid,xypoints,zpoints,λ,εz
         a=exp( (em.q*2π/λ*zpoints[zind]))*ain
         b=exp(-(em.q*2π/λ*zpoints[zind]))*bout
         #convert amplitude vectors to electric fields
-        ex,ey=a2e2d(a+b,em.W)
-        hx,hy=a2e2d(a-b,em.V)
-        ez=1im*εzz\(grd.Kx*hy-grd.Ky*hx)
-        hz=-1im*(grd.Kx*ey-grd.Ky*ex)
+        ex,ey,ez=a2e(a+b,em.W,grd.Kx,grd.Ky,grd.Kz0)
+        hx,hy,hz=a2e(a-b,em.V,grd.Kx,grd.Ky,grd.Kz0)
         #convert from reciprocal lattice vectors to real space distribution
         efield[:,:,zind,1]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(ex),nx,ny,windowfunction)
         efield[:,:,zind,2]=recipvec2real(Array(grd.nx),Array(grd.ny),Array(ey),nx,ny,windowfunction)

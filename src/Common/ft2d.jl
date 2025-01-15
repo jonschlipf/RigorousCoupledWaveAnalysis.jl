@@ -17,10 +17,10 @@ function real2recip(dnx,dny,f)
     F0=fftshift(fft(f))/length(f)
     a=Int64(ceil(size(f,1)/2+.5))
     b=Int64(ceil(size(f,2)/2+.5))
-    F=0.0im*dnx
+    F=0.0im*Matrix(dnx)
     for i=1:size(F,1)
         for j=1:size(F,2)
-            F[i,j]=F0[dnx[i,j]+a,dny[i,j]+b]
+            F[i,j]=F0[Matrix(dnx)[i,j]+a,Matrix(dny)[i,j]+b]
         end
     end
     return F

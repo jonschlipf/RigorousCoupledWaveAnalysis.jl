@@ -8,7 +8,7 @@ include("models.jl")
 include("grids.jl")
 export Eigenmodes,Halfspace
 export eigenmodes,halfspace
-export a2e,a2e2d,a2p,e2p,slicehalf,getfields,a2p2,get_εzz
+export a2e2d,a2p,e2p,slicehalf,getfields,get_εzz
 """
     Eigenmodes(V,W,X,q)
 
