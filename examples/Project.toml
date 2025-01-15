@@ -1,3 +1,4 @@
 [deps]
+FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 RigorousCoupledWaveAnalysis = "c8f76c1c-e1da-11e9-2f58-db462fa08db6"

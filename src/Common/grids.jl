@@ -27,11 +27,11 @@ struct RCWAGrid
     dny::AbstractArray{<:Integer,2}
     px::Real
     py::Real
-    Kx::Diagonal#{<:Number,DenseVector{<:Number}}
-    Ky::Diagonal#{<:Number,DenseVector{<:Number}}
+    Kx::AbstractArray{<:Number,2}
+    Ky::AbstractArray{<:Number,2}
     k0::Vector{<:Number}
     V0::AbstractArray{<:Number,2}
-    Kz0::Diagonal#{<:Number,Vector{<:Number}}
+    Kz0::AbstractArray{<:Number,2}
 end
 """
 	ngrid(Nx,Ny,use_cude=false)
@@ -87,15 +87,26 @@ function kgrid(nx::AbstractVector{<:Integer},ny::AbstractVector{<:Integer},px::R
     Ky=Diagonal(Complex.(ky))
     return Kx,Ky,k0
 end
-function pmlgrid(n,pml_fraction::Real,γ::Number=1/(1-1im))
+function pmlgrid(n,nsec,pitch,sz,γ::Number=1/(1-1im))
     f=0.0im*n
     for i in eachindex(f)
-        f[i]=-pml_fraction*(-1)^n[i]*((1+γ/4)*sinc(pml_fraction*n[i])+1/2*sinc(n[i]*pml_fraction-1)+.5*sinc(pml_fraction*n[i]+1)-γ/8*sinc(n[i]*pml_fraction-2)-γ/8*sinc(n[i]*pml_fraction+2))
-        if n[i]==0
-            f[i]+=1
-        end
+        q=pitch-sz
+        f[i]=-(-1)^n[i]*q*sinc(n[i]*q/pitch)+ # part x<e/2
+            (pitch*sinc(n[i])+q*(-1)^n[i]*sinc(n[i]*q/pitch))*(.5+γ/8)+ # DC
+            -.25*q*(-1)^n[i]+sinc(n[i]*q/pitch-1)+
+            -.25*q*(-1)^n[i]+sinc(n[i]*q/pitch+1)+ #cos squared
+            γ/16*q*(-1)^n[i]+sinc(n[i]*q/pitch-2)+
+            γ/16*q*(-1)^n[i]+sinc(n[i]*q/pitch+2) #cos squared times sin squared
+        # This is now the version from Hugonin et Lalanne
+    f[i]=sinc(n[i])*pitch-q*(-1)^n[i]*sinc(n[i]*q/pitch)*(.5+γ/8)+ # DC
+            -.25*q*(-1)^n[i]*sinc(n[i]*q/pitch-1)+
+            -.25*q*(-1)^n[i]*sinc(n[i]*q/pitch+1)+ #cos squared
+            γ/16*q*(-1)^n[i]*sinc(n[i]*q/pitch-2)
+            γ/16*q*(-1)^n[i]*sinc(n[i]*q/pitch+2) #cos squared times sin squared
     end
-    return f
+        f=f.*sinc.(nsec)
+
+    return f/pitch
 end
 """
     modes_freespace(Kx,Ky)
@@ -107,8 +118,8 @@ Computes the eigenmodes of propagation through free space, for normalization
 * `V0`: coordinate transform between free space eigenmode amplitude and magnetic field
 * `Kz0`: z-axis component of the propagation vector in free space
 """
-function modes_freespace(Kx::Diagonal{<:Number, <:DenseVector{<:Number}},Ky::Diagonal{<:Number, <:DenseVector{<:Number}})
-    IM=Diagonal(Kx*0 .+1)
+function modes_freespace(Kx::AbstractArray{<:Number},Ky::AbstractArray{<:Number})
+    IM=Kx*0 .+1
     #just because |k|=1
     Kz0=sqrt.(Complex.(IM-Kx*Kx-Ky*Ky))
 	Kz0[imag.(Kz0).<0].*=-1
@@ -117,7 +128,7 @@ function modes_freespace(Kx::Diagonal{<:Number, <:DenseVector{<:Number}},Ky::Dia
     Q0=[Kx*Ky IM-Kx*Kx;Ky*Ky-IM -Ky*Kx]
     #propagation
 
-    q0=Diagonal([1im*Kz0 0I;0I 1im*Kz0])
+    q0=[1im*Kz0 0I;0I 1im*Kz0]
 
     #Free space, so W is identity
     V0=Q0/q0
@@ -149,15 +160,15 @@ function rcwagrid(Nx::Integer,Ny::Integer,px::Real,py::Real,θ::Real,α::Real,λ
     V0,Kz0=modes_freespace(Kx,Ky)
 	return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
 end
-function rcwagrid_pml(Nx::Integer,Ny::Integer,px::Real,py::Real,θ::Real,α::Real,λ::Real,sup,pml_fraction::Real,γ::Number=1/(1-1im),use_gpu=false)
+function rcwagrid_pml(Nx::Integer,Ny::Integer,px::Real,py::Real,θ::Real,α::Real,λ::Real,sup,sx::Real,sy::Real,γ::Number=1/(1-1im),use_gpu=false)
     if use_gpu&&!CUDA.functional()        
         @warn "CUDA not functional, fallback to CPU."
         use_gpu=false
     end
     nx,ny,dnx,dny=ngrid(Nx,Ny,use_gpu)
     Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ,sup)
-    Kx=pmlgrid(dnx,pml_fraction,γ)*Kx
-    Ky=pmlgrid(dny,pml_fraction,γ)*Ky
+    Kx=pmlgrid(dnx,dny,px,sx,γ)*Kx
+    Ky=pmlgrid(dny,dnx,py,sy,γ)*Ky
 
     V0,Kz0=modes_freespace(Kx,Ky)
     return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)

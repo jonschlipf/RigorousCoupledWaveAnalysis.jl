@@ -6,7 +6,7 @@ air=ConstantPerm(1.0)
 
 
 N=6
-mdl=RCWAModel([SimpleLayer(1000,air),PatternedLayer(3000,[air,Si],[Circle(.1)]),SimpleLayer(1000,air)],air,air)
+mdl=RCWAModel([PatternedLayer(3000,[air,Si],[Circle(0.0)])],air,air)
 grd=rcwagrid_pml(N,N,10000,10000,1e-5,0,1000,mdl.εsup,.5)
 #grd=rcwagrid(N,N,10000,10000,1e-5,0,1000,mdl.εsup)
 ste,stm=rcwasource(grd)
