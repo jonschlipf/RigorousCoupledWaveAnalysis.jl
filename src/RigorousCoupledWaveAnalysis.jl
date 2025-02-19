@@ -19,6 +19,8 @@ include("SRCWA/SRCWA.jl")
 include("ETM/ETM.jl")
 include("BasicMaterials/BasicMaterials.jl")
 
+include("Taylor/Taylor.jl")
+export taylor_reftra
 
 using .Common
 using .SRCWA
