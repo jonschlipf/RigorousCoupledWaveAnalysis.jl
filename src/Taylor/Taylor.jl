@@ -5,6 +5,8 @@ using ..Common
 export squarescale_reftra
 
 function taylorx(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
+    IMa=Diagonal(Kx*0 .+1)
+    IM=[IMa 0*IMa;0*IMa IMa]
     k0=2π/real(λ)
     #get the base permittivity
     εxx=get_permittivity(l.materials[1],λ,1)*I
@@ -65,7 +67,7 @@ function taylorx(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
     η=inv(εzz)
     P=[Kx*η*Ky I-Kx*η*Kx;Ky*η*Ky-I -Ky*η*Kx]
     Q=[Kx*Ky+εyx εyy-Kx*Kx;Ky*Ky-εxx -εxy-Ky*Kx]
-    A0=[0I P;Q 0I]*k0*l.thickness
+    A0=[0IM P;Q 0IM]*k0*l.thickness
     nrm=maximum(sum(abs.(A0),dims=1))
     m=Int(ceil(log2(nrm)))
     A=A0*2.0^-m
@@ -73,9 +75,9 @@ function taylorx(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
     PQP=PQ*P
     QP=Q*P
     QPQ=QP*Q
-    A2=[PQ 0I;0I QP]*(k0*l.thickness*2.0^-m)^2
-    A3=[0I PQP;QP*Q 0I]*(k0*l.thickness*2.0^-m)^3
-    A6=[PQP*QPQ 0I;0I QPQ*PQP]*(k0*l.thickness*2.0^-m)^6
+    A2=[PQ 0IM;0IM QP]*(k0*l.thickness*2.0^-m)^2
+    A3=[0IM PQP;QP*Q 0IM]*(k0*l.thickness*2.0^-m)^3
+    A6=[PQP*QPQ 0IM;0IM QPQ*PQP]*(k0*l.thickness*2.0^-m)^6
     #A2=A*A
     #A3=A2*A
     #A6=A3*A3
@@ -89,6 +91,8 @@ function taylorx(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
     return X^(2^m)
 end
 function squarescalex(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
+    IMa=Diagonal(Kx*0 .+1)
+    IM=[IMa 0*IMa;0*IMa IMa]
     k0=2π/real(λ)
     #get the base permittivity
     εxx=get_permittivity(l.materials[1],λ,1)*I
@@ -121,7 +125,7 @@ function squarescalex(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
     η=inv(εzz)
     P=[Kx*η*Ky I-Kx*η*Kx;Ky*η*Ky-I -Ky*η*Kx]
     Q=[Kx*Ky+εyx εyy-Kx*Kx;Ky*Ky-εxx -εxy-Ky*Kx]
-    A0=[0I P;Q 0I]*k0*l.thickness
+    A0=[0IM P;Q 0IM]*k0*l.thickness
     nrm=maximum(sum(abs.(A0),dims=1))
     m=Int(ceil(log2(nrm)))
     m=0
@@ -130,39 +134,45 @@ function squarescalex(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
     return X^(2^m)
 end
 function taylor_reftra(ψin,m::RCWAModel,grd::RCWAGrid,λ)
+    IMa=Diagonal(grd.Kx*0 .+1)
+    IM=[IMa 0*IMa;0*IMa IMa]
+    IMb=[IM 0*IM;0*IM IM]
     X=[taylorx(grd.dnx,grd.dny,grd.Kx,grd.Ky,λ,l) for l in m.layers]
-    Xp=I
+    Xp=IMb
     for X in X
         Xp*=X
     end
     ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ) #superstrate and substrate
     tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
-    Y=Xp*[I;-tra.V]
-    S=[Y [-I;-ref.V]]\[I;-ref.V]*ψin
+    Y=Xp*[IM;-tra.V]
+    S=[Y [-IM;-ref.V]]\[IM;-ref.V]*ψin
     to,ro=slicehalf(S)
 
     kzin=grd.k0[3]#*real(sqrt(get_permittivity(m.εsup,λ)))
-    R=a2p(0ro,ro,ref.V,I,kzin) #compute amplitudes to powers
-    T=-a2p(to,0to,tra.V,I,kzin)
+    R=a2p(0ro,ro,ref.V,IM,kzin) #compute amplitudes to powers
+    T=-a2p(to,0to,tra.V,IM,kzin)
 
     return R,T
 
 end
 function squarescale_reftra(ψin,m::RCWAModel,grd::RCWAGrid,λ)
+    IMa=Diagonal(grd.Kx*0 .+1)
+    IM=[IMa 0*IMa;0*IMa IMa]
+    IMb=[IM 0*IM;0*IM IM]
     X=[squarescalex(grd.dnx,grd.dny,grd.Kx,grd.Ky,λ,l) for l in m.layers]
-    Xp=I
+    Xp=IMb
     for X in X
         Xp*=X
     end
     ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ) #superstrate and substrate
     tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
-    Y=Xp*[I;-tra.V]
-    S=[Y [-I;-ref.V]]\[I;-ref.V]*ψin
+    Y=Xp*[IM;-tra.V]
+    S=[Y [-IM;-ref.V]]\[IM;-ref.V]*ψin
     to,ro=slicehalf(S)
 
     kzin=grd.k0[3]#*real(sqrt(get_permittivity(m.εsup,λ)))
-    R=a2p(0ro,ro,ref.V,I,kzin) #compute amplitudes to powers
-    T=-a2p(to,0to,tra.V,I,kzin)
+    R=a2p(0ro,ro,ref.V,IM,kzin) #compute amplitudes to powers
+    T=-a2p(to,0to,tra.V,IM,kzin)
 
     return R,T
 
