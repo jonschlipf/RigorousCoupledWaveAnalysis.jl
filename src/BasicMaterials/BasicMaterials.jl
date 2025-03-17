@@ -14,7 +14,7 @@ sio2_malitson_n(l)=sqrt(Complex(1+(0.6961663l^2)/(l^2-0.0684043^2)+(0.4079426l^2
 sio2_malitson(l)=sio2_malitson_n(.001l)^2 .+0im
 #I. H. Malitson. Interspecimen comparison of the refractive index of fused silica, J. Opt. Soc. Am. 55, 1205-1208 (1965)
 
-si3n4_luke_n(l)=sqrt(1+(3.0249l^2)/(l^2-0.1353406^2)+(40314l^2)/(l^2-1239.842^2))
+si3n4_luke_n(l)=sqrt(Complex(1+(3.0249l^2)/(l^2-0.1353406^2)+(40314l^2)/(l^2-1239.842^2)))
 si3n4_luke(l)=si3n4_luke_n(.001l)^2 .+0im
 #K. Luke, Y. Okawachi, M. R. E. Lamont, A. L. Gaeta, M. Lipson. Broadband mid-infrared frequency comb generation in a Si3N4 microresonator, Opt. Lett. 40, 4823-4826 (2015)
 
