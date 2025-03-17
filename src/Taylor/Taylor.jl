@@ -1,9 +1,18 @@
-using LinearAlgebra
 using LinearAlgebra,CUDA
 using ..Common
 
-export squarescale_reftra
-taylorx(dnx,dny,Kx,Ky,λ,l::SimpleLayer)=eigenmodes(dnx,dny,Kx,Ky,λ,l).X
+function taylorx(dnx,dny,Kx,Ky,λ,l::SimpleLayer)
+    #Xa=(eigenmodes(dnx,dny,Kx,Ky,λ,l).X
+    #return [Xa 0Xa;0Xa Xa]
+    IMa=Diagonal(Kx*0 .+1)
+    k0=2π/λ
+    za=0*IMa
+    ε=get_permittivity(l.material,λ)
+    m1=sqrt.(Complex.(Kx.*Kx+Ky.*Ky-ε*I))
+    m2=exp.(m1*k0*l.thickness)
+    lm=[m2 za za za; za m2 za za;za za m2 za;za za za m2]
+    return lm
+end
 function taylorx(dnx,dny,Kx,Ky,λ,l::AnisotropicLayer)
     # probably doable without taylor as well?
     IMa=Diagonal(Kx*0 .+1)
@@ -156,76 +165,11 @@ function taylorx(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
     X=B2+(B3+A9)*A9
     return X^(2^m)
 end
-function squarescalex(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
-    IMa=Diagonal(Kx*0 .+1)
-    IM=[IMa 0*IMa;0*IMa IMa]
-    k0=2π/real(λ)
-    #get the base permittivity
-    εxx=get_permittivity(l.materials[1],λ,1)*I
-    #add the permittivity for all inclusions
-    if minimum([typeof(m)<:Common.Isotropic for m in l.materials])
-        #all isotropic
-        εxx=get_permittivity(l.materials[1],λ)*I
-        for ct=1:length(l.geometries)
-            rec=reciprocal(l.geometries[ct],dnx,dny)
-            εxx+=rec*(get_permittivity(l.materials[ct+1],λ)-get_permittivity(l.materials[ct],λ))
-        end
-        εzz=εyy=εxx
-        εxy=εyx=0I
-    else
-        #anisotropic
-        εxx=get_permittivity(l.materials[1],λ,1)*I
-        εxy=get_permittivity(l.materials[1],λ,2)*I
-        εyx=get_permittivity(l.materials[1],λ,3)*I
-        εyy=get_permittivity(l.materials[1],λ,4)*I
-        εzz=get_permittivity(l.materials[1],λ,5)*I
-        for ct=1:length(l.geometries)
-            rec=reciprocal(l.geometries[ct],dnx,dny)
-            εxx+=rec*(get_permittivity(l.materials[ct+1],λ,1)-get_permittivity(l.materials[ct],λ,1))
-            εxy+=rec*(get_permittivity(l.materials[ct+1],λ,2)-get_permittivity(l.materials[ct],λ,2))
-            εyx+=rec*(get_permittivity(l.materials[ct+1],λ,3)-get_permittivity(l.materials[ct],λ,3))
-            εyy+=rec*(get_permittivity(l.materials[ct+1],λ,4)-get_permittivity(l.materials[ct],λ,4))
-            εzz+=rec*(get_permittivity(l.materials[ct+1],λ,5)-get_permittivity(l.materials[ct],λ,5))
-        end
-    end	 	
-    η=inv(εzz)
-    P=[Kx*η*Ky I-Kx*η*Kx;Ky*η*Ky-I -Ky*η*Kx]
-    Q=[Kx*Ky+εyx εyy-Kx*Kx;Ky*Ky-εxx -εxy-Ky*Kx]
-    A0=[0IM P;Q 0IM]*k0*l.thickness
-    nrm=maximum(sum(abs.(A0),dims=1))
-    m=Int(ceil(log2(nrm)))
-    m=0
-    A=A0*2.0^-m
-    X=exp(A)
-    return X^(2^m)
-end
 function taylor_reftra(ψin,m::RCWAModel,grd::RCWAGrid,λ)
     IMa=Diagonal(grd.Kx*0 .+1)
     IM=[IMa 0*IMa;0*IMa IMa]
     IMb=[IM 0*IM;0*IM IM]
     X=[taylorx(grd.dnx,grd.dny,grd.Kx,grd.Ky,λ,l) for l in m.layers]
-    Xp=IMb
-    for X in X
-        Xp*=X
-    end
-    ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ) #superstrate and substrate
-    tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
-    Y=Xp*[IM;-tra.V]
-    S=[Y [-IM;-ref.V]]\[IM;-ref.V]*ψin
-    to,ro=slicehalf(S)
-
-    kzin=grd.k0[3]#*real(sqrt(get_permittivity(m.εsup,λ)))
-    R=a2p(0ro,ro,ref.V,IM,kzin) #compute amplitudes to powers
-    T=-a2p(to,0to,tra.V,IM,kzin)
-
-    return R,T
-
-end
-function squarescale_reftra(ψin,m::RCWAModel,grd::RCWAGrid,λ)
-    IMa=Diagonal(grd.Kx*0 .+1)
-    IM=[IMa 0*IMa;0*IMa IMa]
-    IMb=[IM 0*IM;0*IM IM]
-    X=[squarescalex(grd.dnx,grd.dny,grd.Kx,grd.Ky,λ,l) for l in m.layers]
     Xp=IMb
     for X in X
         Xp*=X

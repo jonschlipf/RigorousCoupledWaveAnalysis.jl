@@ -143,6 +143,13 @@ The CUDA implementation is heavily inspired by [this fork](https://github.com/al
 A major exception is the solution of the non-hermitian Eigenvalue problems, which is not implemented in CUDA. Here, a fallback CPU routine (`LinearAlgebra.eigen`) is used. 
 For a truncation order of `N=10`, GPU acceleration achieves a speedup of a factor of 5 in a system with dual AMD EPYC 7713 64-Core Processor and NVIDIA H100 accelerator.
 
+## Eigenvalue-free algorithm
+
+Xu and Charlton (references below) have introduced an alternative way, computing the matrix exponential by a Taylor series instead of an Eigentransform. This allows for efficient parallelism and thus improves performance drastically, about two orders of magnitude compared to ETM using high-end GPU. Only reflection and transmission are implemented so far, accessed via:
+
+```julia
+E,H=taylor_reftra(mdl,grd,xypoints,zpoints,λ,ste) #compute the electric and magnetic field
+```
 
 ## Mathematics
 
@@ -163,3 +170,5 @@ Marco Liscidini, Dario Gerace, Lucio Claudio Andreani, and J. E. Sipe, "Scatteri
 M. G. Moharam and T. K. Gaylord, "Rigorous coupled-wave analysis of planar-grating diffraction," J. Opt. Soc. Am. 71, 811-818 (1981) 
 
 Raymond Rumpf, "Improved formulation of scattering matrices for semi-analytical methods thatis consistent with convention," Progress In Electromagnetics Research B35, 241–261 (2011)
+
+J. Xu and M. D. B. Charlton, "Highly Efficient Rigorous Coupled-Wave Analysis Implementation Without Eigensystem Calculation," IEEE Access 12, 127966-127975 (2024)
