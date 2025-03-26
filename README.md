@@ -148,7 +148,7 @@ For a truncation order of `N=10`, GPU acceleration achieves a speedup of a facto
 Xu and Charlton (references below) have introduced an alternative way, computing the matrix exponential by a Taylor series instead of an Eigentransform. This allows for efficient parallelism and thus improves performance drastically, about two orders of magnitude compared to ETM using high-end GPU. Only reflection and transmission are implemented so far, accessed via:
 
 ```julia
-E,H=taylor_reftra(mdl,grd,xypoints,zpoints,λ,ste) #compute the electric and magnetic field
+E,H=taylor_reftra(mdl,grd,xypoints,zpoints,λ,ste) 
 ```
 
 ## Mathematics
