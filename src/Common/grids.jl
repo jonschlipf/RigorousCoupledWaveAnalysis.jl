@@ -60,16 +60,41 @@ function ngrid(Nx::Integer,Ny::Integer,use_cuda=false)
     return nxr,nyr,dnxr,dnyr
 end
 """
-    kgrid(nx,ny,px,py,θ,α,λ)
+    kgrid(nx,ny,px,py,k0,λ)
 Computes the wave vectors of the plane wave expansion
 # Arguments
 * `nx` : Order in x
 * `ny` : Order in y
 * `px` : Structure pitch in x
 * `py` : Structure pitch in y
-* `θ` : inclination angle of incoming wave
-* `α` : azimuth angle of incoming wave
-* `λ` : wavelength
+* `k0` : incoming wave vector (normalized to omega/c0)
+# Outputs
+* `Kx` : Wave vector in x
+* `Ky` : Wave vector in y
+* `k0` : Free-space 0th-order wavevector
+"""
+function kgrid(nx::AbstractVector{<:Integer},ny::AbstractVector{<:Integer},px::Real,py::Real,k0::AbstractVector{<:Real},λ::Real)
+    #all k vectors are generally normalized to k0 here
+    #the spatial vectors are the sum of the incoming vector and the reciprocal lattice vectors
+    kx=k0[1].+real(λ)*nx/px;
+    ky=k0[2].+real(λ)*ny/py;
+    #need matrix for later computations
+    Kx=Diagonal(Complex.(kx))
+    Ky=Diagonal(Complex.(ky))
+    return Kx,Ky,k0
+end
+"""
+    kgrid(nx,ny,px,py,θ,α,λ,sup)
+Computes the wave vectors of the plane wave expansion
+# Arguments
+* `nx` : Order in x
+* `ny` : Order in y
+* `px` : Structure pitch in x
+* `py` : Structure pitch in y
+* `θ`  : inclination angle of incoming wave
+* `α`  : azimuth angle of incoming wave
+* `λ`  : wavelength
+* `sup` : superstrate material
 # Outputs
 * `Kx` : Wave vector in x
 * `Ky` : Wave vector in y
@@ -79,12 +104,7 @@ function kgrid(nx::AbstractVector{<:Integer},ny::AbstractVector{<:Integer},px::R
     #all k vectors are generally normalized to k0 here
     #The incoming wave, transformed from spherical coordinates to normalized cartesian coordinates, |k0|=1
     k0=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]*real(sqrt(get_permittivity(sup,λ)))
-    #the spatial vectors are the sum of the incoming vector and the reciprocal lattice vectors
-    kx=k0[1].+real(λ)*nx/px;
-    ky=k0[2].+real(λ)*ny/py;
-    #need matrix for later computations
-    Kx=Diagonal(Complex.(kx))
-    Ky=Diagonal(Complex.(ky))
+    Kx,Ky,k0=kgrid(nx,ny,px,py,k0,λ,sup)
     return Kx,Ky,k0
 end
 """
@@ -137,7 +157,31 @@ function rcwagrid(Nx::Integer,Ny::Integer,px::Real,py::Real,θ::Real,α::Real,λ
     nx,ny,dnx,dny=ngrid(Nx,Ny,use_gpu)
     Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ,sup)
     V0,Kz0=modes_freespace(Kx,Ky)
-	return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
+    return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
+end
+"""
+	rcwagrid(Nx,Ny,px,py,k0,λ,use_cuda=false)
+Create a reciprocal space grid for RCWA simulation
+# Arguments
+* `nx` : Maximum order in x
+* `ny` : Maximum order in y
+* `px` : Structure pitch in x
+* `py` : Structure pitch in y
+* `k0` : incoming wave vector (normalized to omega/c0)
+* `λ` : wavelength
+* `use_cuda` : optional, switch to CUDA GPU solver
+# Outputs
+* `grd`: RCWA grid struct
+"""
+function rcwagrid(Nx::Integer,Ny::Integer,px::Real,py::Real,k0::AbstractVector{<:Real},λ::Real,use_gpu=false)
+    if use_gpu&&!CUDA.functional()        
+        @warn "CUDA not functional, fallback to CPU."
+        use_gpu=false
+    end
+    nx,ny,dnx,dny=ngrid(Nx,Ny,use_gpu)
+    Kx,Ky,k0=kgrid(nx,ny,px,py,k0,λ)
+    V0,Kz0=modes_freespace(Kx,Ky)
+    return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
 end
 """
 	rcwasource(grd)
@@ -148,7 +192,7 @@ Create a reciprocal space grid for RCWA simulation
 * `ψte`: Amplitude vector describing an incoming TE wave
 * `ψtm`: Amplitude vector describing an incoming TM wave
 """
-function rcwasource(grd,nsup=1) #nsup specification is deprecated here
+function rcwasource(grd::RCWAGrid,nsup=1) #nsup specification is deprecated here
     #incoming wave vector
 	kin=grd.k0
     #the total number of scattering states
