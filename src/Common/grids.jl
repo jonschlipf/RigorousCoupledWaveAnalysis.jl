@@ -1,5 +1,5 @@
 using LinearAlgebra,CUDA
-export ngrid,kgrid,rcwagrid,modes_freespace,RCWAGrid,rcwasource
+export ngrid,kgrid,rcwagrid,modes_freespace,RCWAGrid,rcwasource,rcwasource_custom
 """
     RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
 Structure to store a grid for RCWA computation
@@ -104,7 +104,7 @@ function kgrid(nx::AbstractVector{<:Integer},ny::AbstractVector{<:Integer},px::R
     #all k vectors are generally normalized to k0 here
     #The incoming wave, transformed from spherical coordinates to normalized cartesian coordinates, |k0|=1
     k0=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]*real(sqrt(get_permittivity(sup,λ)))
-    Kx,Ky,k0=kgrid(nx,ny,px,py,k0,λ,sup)
+    Kx,Ky,k0=kgrid(nx,ny,px,py,k0,λ)
     return Kx,Ky,k0
 end
 """
@@ -218,5 +218,27 @@ function rcwasource(grd::RCWAGrid,nsup=1) #nsup specification is deprecated here
         ψ0te=CuArray(ψ0te)
     end
     return ψ0te,ψ0tm
+end
+"""
+	rcwasource_custom(grd,E0)
+Create a reciprocal space grid for RCWA simulation
+# Arguments
+* `grd`: RCWA grid struct
+* `E0` : source polarization 2-vector (x and y)
+# Outputs
+* `ψ`: Amplitude vector of the injected wave
+"""
+function rcwasource_custom(grd::RCWAGrid,E0::AbstractVector{<:Number})
+    #the total number of scattering states
+    width=(grd.Nx*2+1)*(grd.Ny*2+1)
+	#initialize array
+    ψ0=zeros(width*2)*1im
+	#prefill the 0th scattering order elements for x and y
+    ψ0[convert(Int64,(width+1)/2)]=E0[1]
+    ψ0[convert(Int64,(width+1)/2)+width]=E0[2]
+    if grd.dnx isa CuArray
+        ψ0=CuArray(ψ0)
+    end
+    return ψ0
 end
 
