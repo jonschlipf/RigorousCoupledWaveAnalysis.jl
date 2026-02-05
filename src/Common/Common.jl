@@ -279,9 +279,6 @@ end
 
 
 """
-<<<<<<< HEAD
-    a2p(a,b,W,Kx,Ky,kz0)
-=======
     a2p2(a,W,Kx,Ky,Kz,kz0)
 
 Converts an amplitude vector (in substrate or superstrate) to Poynting power flow in z direction
@@ -301,7 +298,6 @@ function a2p2(a,W,Kx,Ky,Kz,kz0)
 end
 """
     a2p(a,b,V,W,kz0)
->>>>>>> dc52afda8d6111de614d87841053a2e6a1a05938
 
 Converts an amplitude vector (in substrate or superstrate) to Poynting power flow in z direction
 # Arguments
