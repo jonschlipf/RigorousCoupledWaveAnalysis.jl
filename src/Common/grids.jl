@@ -75,13 +75,13 @@ Computes the wave vectors of the plane wave expansion
 * `Ky` : Wave vector in y
 * `k0` : Free-space 0th-order wavevector
 """
-function kgrid(nx::AbstractVector{<:Integer},ny::AbstractVector{<:Integer},px::Real,py::Real,θ::Real,α::Real,λ::Real,sup)
+function kgrid(nx::AbstractVector{<:Integer},ny::AbstractVector{<:Integer},px::Real,py::Real,θ::Real,α::Real,λ::Number,sup)
     #all k vectors are generally normalized to k0 here
     #The incoming wave, transformed from spherical coordinates to normalized cartesian coordinates, |k0|=1
     k0=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]*real(sqrt(get_permittivity(sup,λ)))
     #the spatial vectors are the sum of the incoming vector and the reciprocal lattice vectors
-    kx=k0[1].+real(λ)*nx/px;
-    ky=k0[2].+real(λ)*ny/py;
+    kx=k0[1].+(λ)*nx/px;
+    ky=k0[2].+(λ)*ny/py;
     #need matrix for later computations
     Kx=Diagonal(Complex.(kx))
     Ky=Diagonal(Complex.(ky))
@@ -129,7 +129,7 @@ Create a reciprocal space grid for RCWA simulation
 # Outputs
 * `grd`: RCWA grid struct
 """
-function rcwagrid(Nx::Integer,Ny::Integer,px::Real,py::Real,θ::Real,α::Real,λ::Real,sup,use_gpu=false)
+function rcwagrid(Nx::Integer,Ny::Integer,px::Real,py::Real,θ::Real,α::Real,λ::Number,sup,use_gpu=false)
     if use_gpu&&!CUDA.functional()        
         @warn "CUDA not functional, fallback to CPU."
         use_gpu=false
