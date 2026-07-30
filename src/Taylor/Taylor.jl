@@ -145,6 +145,9 @@ function taylorx(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
     A0=[0IM P;Q 0IM]*k0*l.thickness
     nrm=maximum(sum(abs.(A0),dims=1))
     m=Int(ceil(log2(nrm)))
+    if m<0
+        m=0
+    end
     A=A0*2.0^-m
     PQ=P*Q
     PQP=PQ*P
