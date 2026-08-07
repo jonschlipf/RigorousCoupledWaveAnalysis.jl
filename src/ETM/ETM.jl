@@ -70,18 +70,24 @@ lation)
 * `R` : reflection by the device 
 * `T` : transmission by the device 
 """
-function etm_reftra(ψin,m::RCWAModel,grd::RCWAGrid,λ,em,sup,sub)
+function etm_reftra(ψin,m::RCWAModel,grd::RCWAGrid,λ,em,sup,sub,only0th=false)
 	kzin=grd.k0[3]#*real(sqrt(get_permittivity(m.εsup,λ)))
 	ro,to,r,t=etm_propagate(sup,sub,em,ψin,grd,false) #propagate amplitudes
+    if only0th
+        sca=zeros(size(ro))
+        sca[(length(grd.Nx)-1)/2]=1
+        ro=ro.*sca
+        to=to.*sca
+    end
     R=a2p(0ro,ro,sup.V,I,kzin) #compute amplitudes to powers
     T=-a2p(to,0to,sub.V,I,kzin)
     return R,T
 end
-function etm_reftra(s,m::RCWAModel,grd::RCWAGrid,λ)
+function etm_reftra(s,m::RCWAModel,grd::RCWAGrid,λ,only0th=false)
 	ems=eigenmodes(grd,λ,m.layers) #eigenmodes of all layers
 	ref=halfspace(grd.Kx,grd.Ky,m.εsup,λ) #superstrate and substrate
 	tra=halfspace(grd.Kx,grd.Ky,m.εsub,λ)
-	R,T=etm_reftra(s,m,grd,λ,ems,ref,tra)
+	R,T=etm_reftra(s,m,grd,λ,ems,ref,tra,only0th)
 	return R,T
 end
 """

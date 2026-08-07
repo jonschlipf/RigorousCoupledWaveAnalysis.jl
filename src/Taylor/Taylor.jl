@@ -168,7 +168,7 @@ function taylorx(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
     X=B2+(B3+A9)*A9
     return X^(2^m)
 end
-function taylor_reftra(ψin,m::RCWAModel,grd::RCWAGrid,λ)
+function taylor_reftra(ψin,m::RCWAModel,grd::RCWAGrid,λ,only0th=false)
     IMa=Diagonal(grd.Kx*0 .+1)
     IM=[IMa 0*IMa;0*IMa IMa]
     IMb=[IM 0*IM;0*IM IM]
@@ -184,6 +184,12 @@ function taylor_reftra(ψin,m::RCWAModel,grd::RCWAGrid,λ)
     to,ro=slicehalf(S)
 
     kzin=grd.k0[3]#*real(sqrt(get_permittivity(m.εsup,λ)))
+    if only0th
+        sca=zeros(size(ro))
+        sca[(length(grd.Nx)-1)/2]=1
+        ro=ro.*sca
+        to=to.*sca
+    end
     R=a2p(0ro,ro,ref.V,IM,kzin) #compute amplitudes to powers
     T=-a2p(to,0to,tra.V,IM,kzin)
 
