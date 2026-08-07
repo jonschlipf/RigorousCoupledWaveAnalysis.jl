@@ -74,8 +74,10 @@ function etm_reftra(ψin,m::RCWAModel,grd::RCWAGrid,λ,em,sup,sub,only0th=false)
 	kzin=grd.k0[3]#*real(sqrt(get_permittivity(m.εsup,λ)))
 	ro,to,r,t=etm_propagate(sup,sub,em,ψin,grd,false) #propagate amplitudes
     if only0th
-        sca=zeros(size(ro))
-        sca[(length(grd.Nx)-1)/2]=1
+        grdsize=(2*grd.Nx+1)*(2*grd.Ny+1)
+        sca=zeros(2*grdsize)
+        sca[Int((grdsize+1)/2)]=1
+        sca[Int((grdsize+1)/2)+grdsize]=1
         ro=ro.*sca
         to=to.*sca
     end
