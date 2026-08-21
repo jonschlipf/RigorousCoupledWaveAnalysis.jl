@@ -51,10 +51,11 @@ Compute the eigenmodes of a layer
 * `dny` : reciprocal space grid in y
 * `Kx` : kx component of the wave vector in reciprocal space
 * `Ky` : ky component of the wave vector in reciprocal space
+* `pr` : optional phase (in radians) of the decision boundary of the square root, default is 0
 # Outputs
 * `em` : Eigenmode object
 """
-function eigenmodes(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
+function eigenmodes(dnx,dny,Kx,Ky,λ,l::PatternedLayer,pr=0)
     k0=2π/real(λ)
     #get the base permittivity
     εxx=get_permittivity(l.materials[1],λ,1)*I
@@ -99,7 +100,7 @@ function eigenmodes(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
     ev=eigen(Matrix(M))
     q=Diagonal(sqrt.(Complex.(ev.values)))
     #select negative root
-    q[real.(q).>0].*=-1
+    q[real.(q*exp(1im*pr)).>0].*=-1
     #W is transform between amplitude vector and E-Field
     if dnx isa CuArray
         W=CuArray(ev.vectors)
@@ -114,14 +115,14 @@ function eigenmodes(dnx,dny,Kx,Ky,λ,l::PatternedLayer)
     #create struct
     return Eigenmodes(V,W,X,q)
 end
-function eigenmodes(dnx,dny,Kx,Ky,λ,l::SimpleLayer)
+function eigenmodes(dnx,dny,Kx,Ky,λ,l::SimpleLayer,pr=0)
 	k0=2π/real(λ)
 	#permittivity tensor
     ε=get_permittivity(l.material,λ)*I
 	#z component
     Kz=sqrt.(Complex.(ε-Kx*Kx-Ky*Ky))
     q=[1im*Kz 0I;0I 1im*Kz]
-    q[real.(q).>0].*=-1
+    q[real.(q*exp(1im*pr)).>0].*=-1
 	#magnetic field eigenmodes
     Q=[Kx*Ky ε-Kx*Kx;Ky*Ky-ε -Ky*Kx]
     V=Q/Diagonal(q)
@@ -131,7 +132,7 @@ function eigenmodes(dnx,dny,Kx,Ky,λ,l::SimpleLayer)
     X=exp(Diagonal(q*k0*l.thickness))
     return Eigenmodes(V,W,X,q)
 end
-function eigenmodes(dnx,dny,Kx,Ky,λ,l::AnisotropicLayer)
+function eigenmodes(dnx,dny,Kx,Ky,λ,l::AnisotropicLayer,pr=0)
     k0=2π/real(λ)
 	#permittivity tensor
 	εxx=get_permittivity(l.material,λ,1)*I
@@ -153,7 +154,7 @@ function eigenmodes(dnx,dny,Kx,Ky,λ,l::AnisotropicLayer)
     ev=eigen(Matrix(P*Q))
     q=Diagonal(sqrt.(Complex.(ev.values)))
 	#select negative root
-    q[real.(q).>0].*=-1
+    q[real.(q*exp(1im*pr)).>0].*=-1
     #W is transform between amplitude vector and E-Field
     W=ev.vectors
     #V is transform between amplitude vector and H-Field
@@ -214,10 +215,11 @@ Compute the eigenmodes of a halfspace
 * `Ky` : ky component of the wave vector in reciprocal space
 * `material` : medium
 * `λ` : wavelength
+* `pr` : optional phase (in radians) of the decision boundary of the square root, default is 0
 # Outputs
 * `em` : halfspace eigenmode object
 """
-function halfspace(Kx,Ky,material,λ)
+function halfspace(Kx,Ky,material,λ,pr=0)
     #Base value
 	εxx=get_permittivity(material,λ,1)*I
     #probably add off-diagonal elements
@@ -232,7 +234,7 @@ function halfspace(Kx,Ky,material,λ)
     end
 	#z component of wave vector
 	Kz=sqrt.(Complex.(εzz-Kx*Kx-Ky*Ky))
-	Kz[imag.(Kz).<0].*=-1
+    Kz[imag.(Kz*exp(1im*pr)).<0].*=-1
 	#simple solution like free space
     q0=[1im*Kz 0I;0I 1im*Kz]
 	#Magnetic field eigenvalues
